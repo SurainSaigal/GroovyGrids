@@ -20,7 +20,7 @@ function LoginHandler() {
         response_type: "code",
         client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
         scope: scope,
-        redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI,
+        redirect_uri: process.env.NEXT_PUBLIC_URI + "callback",
         state: state,
         show_dialog: "true",
     })}`;

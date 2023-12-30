@@ -1,6 +1,8 @@
 "use client";
 import LoginHandler from "../api/login";
 
+import styles from "./button.module.css";
+
 const LoginButton = () => {
     return (
         <button
@@ -9,6 +11,9 @@ const LoginButton = () => {
         >
             Log in with Spotify.
         </button>
+        // <div className={styles.button}>
+        //     <a href="#">Log in with Spotify</a>
+        // </div>
     );
 };
 

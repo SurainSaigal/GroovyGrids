@@ -13,12 +13,12 @@ export async function POST(request: Request) {
     try {
         const { state, code } = await request.json();
 
-        if (!process.env.NEXT_PUBLIC_REDIRECT_URI) {
+        if (!process.env.NEXT_PUBLIC_URI) {
             throw new Error("Invalid redirect uri");
         }
         const requestBody = new URLSearchParams();
         requestBody.append("code", code);
-        requestBody.append("redirect_uri", process.env.NEXT_PUBLIC_REDIRECT_URI);
+        requestBody.append("redirect_uri", process.env.NEXT_PUBLIC_URI + "callback");
         requestBody.append("grant_type", "authorization_code");
 
         const headers1 = {
