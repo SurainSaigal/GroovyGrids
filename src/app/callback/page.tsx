@@ -21,7 +21,7 @@ const Callback = () => {
                     code: code,
                     state: state,
                 };
-                const response = await fetch(`/api/getSpotifyToken`, {
+                const response = await fetch(`/node_api/getSpotifyToken`, {
                     method: "POST",
                     body: JSON.stringify(requestBody),
                 });

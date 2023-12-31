@@ -22,7 +22,7 @@ const TOOL = () => {
             return;
         }
 
-        fetch(process.env.NEXT_PUBLIC_FLASK_URI + "api/collage", {
+        fetch("/api/collage", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -46,7 +46,7 @@ const TOOL = () => {
                 setImg(url);
             });
         const otherFormat = format === "INTERACT" ? "SHARE" : "INTERACT";
-        fetch(process.env.NEXT_PUBLIC_FLASK_URI + "api/collage", {
+        fetch("/api/collage", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

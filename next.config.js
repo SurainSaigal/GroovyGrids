@@ -4,6 +4,17 @@ const nextConfig = {
         // Enables the styled-components SWC transform
         styledComponents: true,
     },
+    rewrites: async () => {
+        return [
+            {
+                source: "/api/:path*",
+                destination:
+                    process.env.NODE_ENV === "development" || process.env.NODE_ENV === "production"
+                        ? "http://127.0.0.1:5328/api/:path*"
+                        : "/api/",
+            },
+        ];
+    },
 };
 
 module.exports = nextConfig;
