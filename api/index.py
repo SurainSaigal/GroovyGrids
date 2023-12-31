@@ -26,9 +26,11 @@ def hello_world():
         name = data['name']
         collage = makeCollage(token, type, 100, 0, length, format, name)
 
+        start = time.time()
         image_io = io.BytesIO()
         collage.save(image_io, format='JPEG')
         image_io.seek(0)
+        print("bytesio time: " + str(time.time() - start), flush=True)
 
         collage.close()
 
@@ -81,15 +83,13 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name):
 
         info += '\n' + lastImg['url']
 
-        print(str(count) + '. ' + info)  # track info
-        print("ALBUM: " + albumInfo + "\n")
+        # print(str(count) + '. ' + info)  # track info
+        # print("ALBUM: " + albumInfo + "\n")
 
         count += 1
 
-    print("API call done...")
-
-    start = time.time()
     images = [""] * len(imageLinks)
+    start = time.time()
     with concurrent.futures.ThreadPoolExecutor(len(imageLinks)) as executor:
         i = 0
         for link in imageLinks:
@@ -148,8 +148,9 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize):
 
 
 def constructCollage(images: list, imgSize: int, format, displayText):
+    startCollage = time.time()
     dimensions = getDim(len(images), format)
-    print("dimensions: " + str(dimensions))
+    # print("dimensions: " + str(dimensions))
     cols = dimensions[0]
     rows = dimensions[1]
 
@@ -178,14 +179,13 @@ def constructCollage(images: list, imgSize: int, format, displayText):
 
     finalHeight = height + yOffset
 
-    print("img size: " + str(imgSize) + " " +
-          str(width) + "x" + str(finalHeight))
+    # print("img size: " + str(imgSize) + " " +
+    #       str(width) + "x" + str(finalHeight))
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
 
     swirls = swirls.rotate(90 * random.randint(1, 3))
-    print("swirls: " + str(swirls.size))
 
     l = 0
 
@@ -214,6 +214,7 @@ def constructCollage(images: list, imgSize: int, format, displayText):
     drawText(collage, int(xOffset), int(imgSize * 4), int(width -
              xOffset), int(imgSize * 4 + yOffset), displayText, fontSize)
     print("text time: " + str(time.time()-start))
+    print("collage time: " + str(time.time()-startCollage))
 
     return collage
 
