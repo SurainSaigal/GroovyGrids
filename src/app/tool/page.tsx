@@ -9,7 +9,7 @@ const TOOL = () => {
 
     const [type, setType] = useState("tracks");
     const [length, setLength] = useState("short_term");
-    const [format, setFormat] = useState("SHARE");
+    const [format, setFormat] = useState("INTERACT");
 
     const [cachedImages, setCachedImages] = useState<Record<string, string | null>>({});
     const cacheKey = `${type}_${length}_${format}`;
