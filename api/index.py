@@ -110,20 +110,25 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name):
         typeText = "TOP ARTISTS"
     else:
         typeText = "TOP TRACKS"
-
-    displayText = [name.upper(), timeText, typeText]
+    nameSplit = name.split()
+    if len(nameSplit[0]) <= 12:
+        nameFinal = nameSplit[0].upper() + "'S "
+    else:
+        nameFinal = ""
+    displayText = [nameFinal.upper(), timeText, typeText]
 
     collage = constructCollage(images, imgSize, format, displayText)
 
     return collage
 
 
-def drawText(collage: Image, left, upper, right, lower, displayText, textSize):
+def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format):
     current_date = datetime.now()
     formatted_date = current_date.strftime("%m/%d/%y")
     font = ImageFont.truetype(
         "./public/assets/fonts/ClashDisplay-Semibold.otf", textSize)
-    leftText = displayText[0] + "'S " + displayText[2]
+
+    leftText = displayText[0] + displayText[2]
 
     rect = Image.new('RGB', [right - left, lower - upper])
     leftEnd = (len(leftText) - 1) * (textSize * 0.64)
@@ -139,8 +144,13 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize):
     textDraw.text((rect.width - 15, rect.height // 2), displayText[1],
                   font=font, anchor="rm", fill=255)
 
-    background = collage.crop(
-        (left, upper, right, lower))
+    # background = collage.crop(
+    #     (left, upper, right, lower))
+
+    background = Image.open("./public/assets/images/back_" + format + ".jpg")
+    flip = random.randint(0, 1)
+    if flip:
+        background = background.rotate(180)
 
     toPaste = Image.composite(background, rect, text)
 
@@ -161,10 +171,6 @@ def constructCollage(images: list, imgSize: int, format, displayText):
         fontSize = 95
         yOffset = 96
         if len(images) >= 32:
-            # factor = height / 16
-            # width = factor * 9
-            # xOffset = factor / 2
-
             factor = (height + yOffset) / 16
             width = factor * 9
             xOffset = (width - (imgSize * cols)) // 2
@@ -193,6 +199,7 @@ def constructCollage(images: list, imgSize: int, format, displayText):
         collage.paste(swirls, (0, l))
         l += swirls.height
         swirls = swirls.rotate(90)
+
     imgIndex = 0
     for r in range(0, rows):
         for c in range(0, cols):
@@ -212,7 +219,7 @@ def constructCollage(images: list, imgSize: int, format, displayText):
     start = time.time()
 
     drawText(collage, int(xOffset), int(imgSize * 4), int(width -
-             xOffset), int(imgSize * 4 + yOffset), displayText, fontSize)
+             xOffset), int(imgSize * 4 + yOffset), displayText, fontSize, format)
     print("text time: " + str(time.time()-start))
     print("collage time: " + str(time.time()-startCollage))
 

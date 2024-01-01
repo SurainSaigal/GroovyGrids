@@ -4,24 +4,17 @@ import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
 
 const TOOL = () => {
-    const [name, setName] = useState<string>("");
+    const [failed, setFailed] = useState(false);
     const [img, setImg] = useState<string | null>(null);
 
     const [type, setType] = useState("tracks");
     const [length, setLength] = useState("short_term");
-    const [format, setFormat] = useState("INTERACT");
+    const [format, setFormat] = useState("SHARE");
 
     const [cachedImages, setCachedImages] = useState<Record<string, string | null>>({});
     const cacheKey = `${type}_${length}_${format}`;
 
-    const fetchCollage = () => {
-        setImg(null);
-
-        if (cachedImages[cacheKey]) {
-            setImg(cachedImages[cacheKey]);
-            return;
-        }
-
+    const performFetch = () => {
         fetch("/api/collage", {
             method: "POST",
             headers: {
@@ -35,16 +28,38 @@ const TOOL = () => {
                 format: format,
                 name: sessionStorage.getItem("name"),
             }),
+            signal: AbortSignal.timeout(12000),
         })
             .then((response) => response.blob())
             .then((blob) => {
+                setFailed(false);
                 const url = URL.createObjectURL(blob);
                 setCachedImages((prevCachedImages) => ({
                     ...prevCachedImages,
                     [cacheKey]: url,
                 }));
                 setImg(url);
+            })
+            .catch((error) => {
+                setFailed(true);
+                console.error("Fetch error:", error);
+                if (error.name === "AbortError") {
+                    console.log("retrying");
+                    performFetch();
+                }
             });
+    };
+
+    const fetchCollage = () => {
+        setImg(null);
+
+        if (cachedImages[cacheKey]) {
+            setImg(cachedImages[cacheKey]);
+            return;
+        }
+
+        performFetch();
+
         const otherFormat = format === "INTERACT" ? "SHARE" : "INTERACT";
         fetch("/api/collage", {
             method: "POST",
@@ -87,6 +102,11 @@ const TOOL = () => {
                     ) : (
                         <>
                             <Loader />
+                        </>
+                    )}
+                    {failed && (
+                        <>
+                            <p className="mt-4">Taking longer than expected...</p>
                         </>
                     )}
                 </div>

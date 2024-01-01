@@ -31,7 +31,6 @@ const Callback = () => {
                 }
 
                 const data = await response.json();
-                console.log("token", data.token);
                 sessionStorage.setItem("auth_token", data.token);
                 sessionStorage.setItem("name", data.name);
                 setToken(true);
