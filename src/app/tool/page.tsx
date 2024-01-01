@@ -27,6 +27,7 @@ const TOOL = () => {
                 type: type,
                 format: format,
                 name: sessionStorage.getItem("name"),
+                date: sessionStorage.getItem("date"),
             }),
             signal: AbortSignal.timeout(12000),
         })
@@ -73,6 +74,7 @@ const TOOL = () => {
                 type: type,
                 format: otherFormat,
                 name: sessionStorage.getItem("name"),
+                date: sessionStorage.getItem("date"),
             }),
         })
             .then((response) => response.blob())

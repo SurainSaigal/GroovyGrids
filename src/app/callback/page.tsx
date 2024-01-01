@@ -33,6 +33,17 @@ const Callback = () => {
                 const data = await response.json();
                 sessionStorage.setItem("auth_token", data.token);
                 sessionStorage.setItem("name", data.name);
+
+                const formatDate = () => {
+                    const date = new Date();
+                    const mm = String(date.getMonth() + 1).padStart(2, "0"); // Month is zero-based
+                    const dd = String(date.getDate()).padStart(2, "0");
+                    const yy = String(date.getFullYear()).slice(-2);
+                    const dateString = `${mm}/${dd}/${yy}`;
+                    sessionStorage.setItem("date", dateString);
+                };
+                formatDate();
+
                 setToken(true);
             } catch (error: any) {
                 setError(error);

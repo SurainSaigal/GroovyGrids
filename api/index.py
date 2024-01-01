@@ -8,7 +8,6 @@ from functools import reduce
 import time
 import os
 import random
-from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +23,8 @@ def hello_world():
         type = data['type']
         format = data['format']
         name = data['name']
-        collage = makeCollage(token, type, 100, 0, length, format, name)
+        date = data['date']
+        collage = makeCollage(token, type, 100, 0, length, format, name, date)
 
         start = time.time()
         image_io = io.BytesIO()
@@ -37,7 +37,7 @@ def hello_world():
         return send_file(image_io, mimetype='image/jpeg')
 
 
-def makeCollage(auth_token, item_type, limit, offset, time_range, format, name):
+def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, date):
 
     req_url = 'https://api.spotify.com/v1/me/top/' + \
         item_type + '?' + 'limit=' + \
@@ -115,7 +115,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name):
         nameFinal = nameSplit[0].upper() + "'S "
     else:
         nameFinal = ""
-    displayText = [nameFinal.upper(), timeText, typeText]
+    displayText = [nameFinal.upper(), timeText, typeText, date]
 
     collage = constructCollage(images, imgSize, format, displayText)
 
@@ -123,8 +123,6 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name):
 
 
 def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format):
-    current_date = datetime.now()
-    formatted_date = current_date.strftime("%m/%d/%y")
     font = ImageFont.truetype(
         "./public/assets/fonts/ClashDisplay-Semibold.otf", textSize)
 
@@ -139,13 +137,10 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     textDraw = ImageDraw.Draw(text)
     textDraw.text((15, rect.height // 2), leftText,
                   font=font, anchor="lm", fill=255)
-    textDraw.text((date_offset, rect.height // 2), formatted_date,
+    textDraw.text((date_offset, rect.height // 2), displayText[3],
                   font=font, anchor="mm", fill=255)
     textDraw.text((rect.width - 15, rect.height // 2), displayText[1],
                   font=font, anchor="rm", fill=255)
-
-    # background = collage.crop(
-    #     (left, upper, right, lower))
 
     background = Image.open("./public/assets/images/back_" + format + ".jpg")
     flip = random.randint(0, 1)
