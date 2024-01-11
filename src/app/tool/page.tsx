@@ -3,18 +3,31 @@ import React, { useRef, useEffect, useState } from "react";
 import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
 
+interface ImageResponse {
+    link: string;
+    title: string;
+    coordinates: [number, number, number, number];
+}
+
 const TOOL = () => {
     const [failed, setFailed] = useState(false);
     const [img, setImg] = useState<string | null>(null);
-
     const [type, setType] = useState("tracks");
     const [length, setLength] = useState("short_term");
     const [format, setFormat] = useState("INTERACT");
+    const [windowDims, setWindowDims] = useState([0, 0]);
+    const [dims, setDims] = useState([0, 0]);
+    const [imageMapData, setImageMapData] = useState<ImageResponse[] | null>(null);
+    const [imageMapDataDummy, setImageMapDataDummy] = useState<ImageResponse[] | null>(null);
 
     const [cachedImages, setCachedImages] = useState<Record<string, string | null>>({});
+    const [cachedImageMaps, setCachedImageMaps] = useState<
+        Record<string, [ImageResponse[], [number, number]]>
+    >({});
     const cacheKey = `${type}_${length}_${format}`;
 
-    const performFetch = () => {
+    const performFetch = (thisFormat: string, display: boolean) => {
+        const fetchCacheKey = `${type}_${length}_${thisFormat}`;
         fetch("/api/collage", {
             method: "POST",
             headers: {
@@ -25,74 +38,134 @@ const TOOL = () => {
                 access_token: sessionStorage.getItem("auth_token"),
                 length: length,
                 type: type,
-                format: format,
+                format: thisFormat,
                 name: sessionStorage.getItem("name"),
                 date: sessionStorage.getItem("date"),
             }),
             signal: AbortSignal.timeout(12000),
         })
-            .then((response) => response.blob())
-            .then((blob) => {
+            .then((response) => response.json())
+            .then((data) => {
                 setFailed(false);
-                const url = URL.createObjectURL(blob);
-                setCachedImages((prevCachedImages) => ({
-                    ...prevCachedImages,
-                    [cacheKey]: url,
-                }));
-                setImg(url);
+                const imageResponses: ImageResponse[] = data.info;
+                //setDims(data.dimensions);
+                fetch(`data:image/jpeg;base64,${data.image}`)
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        setCachedImages((prevCachedImages) => ({
+                            ...prevCachedImages,
+                            [fetchCacheKey]: url,
+                        }));
+                        setCachedImageMaps((prevCachedImageMaps) => ({
+                            ...prevCachedImageMaps,
+                            [fetchCacheKey]: [imageResponses, data.dimensions],
+                        }));
+                        if (display) {
+                            setDims(data.dimensions);
+                            setImageMapDataDummy(imageResponses);
+                            setImg(url);
+                        }
+                    });
             })
             .catch((error) => {
                 setFailed(true);
                 console.error("Fetch error:", error);
                 if (error.name === "AbortError") {
                     console.log("retrying");
-                    performFetch();
+                    performFetch(thisFormat, display);
                 }
             });
     };
 
     const fetchCollage = () => {
         setImg(null);
-
-        if (cachedImages[cacheKey]) {
+        setImageMapData(null);
+        setImageMapDataDummy(null);
+        if (cachedImages[cacheKey] && cachedImageMaps[cacheKey]) {
+            setImageMapDataDummy(cachedImageMaps[cacheKey][0]);
+            setDims(cachedImageMaps[cacheKey][1]);
             setImg(cachedImages[cacheKey]);
             return;
         }
 
-        performFetch();
+        performFetch(format, true);
 
         const otherFormat = format === "INTERACT" ? "SHARE" : "INTERACT";
-        fetch("/api/collage", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Origin: process.env.NEXT_PUBLIC_URI || "home",
-            },
-            body: JSON.stringify({
-                access_token: sessionStorage.getItem("auth_token"),
-                length: length,
-                type: type,
-                format: otherFormat,
-                name: sessionStorage.getItem("name"),
-                date: sessionStorage.getItem("date"),
-            }),
-        })
-            .then((response) => response.blob())
-            .then((blob) => {
-                const url = URL.createObjectURL(blob);
-                setCachedImages((prevCachedImages) => ({
-                    ...prevCachedImages,
-                    [`${type}_${length}_${otherFormat}`]: url,
-                }));
-            });
+        performFetch(otherFormat, false);
+        // fetch("/api/collage", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         Origin: process.env.NEXT_PUBLIC_URI || "home",
+        //     },
+        //     body: JSON.stringify({
+        //         access_token: sessionStorage.getItem("auth_token"),
+        //         length: length,
+        //         type: type,
+        //         format: otherFormat,
+        //         name: sessionStorage.getItem("name"),
+        //         date: sessionStorage.getItem("date"),
+        //     }),
+        // })
+        //     .then((response) => response.json())
+        //     .then((data) => {
+        //         fetch(`data:image/jpeg;base64,${data.image}`)
+        //             .then((response) => response.blob())
+        //             .then((blob) => {
+        //                 const url = URL.createObjectURL(blob);
+        //                 setCachedImages((prevCachedImages) => ({
+        //                     ...prevCachedImages,
+        //                     [`${type}_${length}_${otherFormat}`]: url,
+        //                 }));
+        //             });
+        //     });
     };
+
     useEffect(() => {
         fetchCollage();
     }, [type, length, format]);
 
-    useEffect(() => {
+    const imageMap = (
+        <map name="dynamicImageMap">
+            {imageMapData &&
+                imageMapData.map((info, index) => (
+                    <area
+                        key={index}
+                        shape="rect"
+                        coords={`${(info.coordinates[0] / dims[0]) * windowDims[0]}, ${
+                            (info.coordinates[1] / dims[1]) * windowDims[1]
+                        }, ${(info.coordinates[2] / dims[0]) * windowDims[0]}, ${
+                            (info.coordinates[3] / dims[1]) * windowDims[1]
+                        }`}
+                        alt={info.title}
+                        title={info.title}
+                        className="hover:cursor-pointer"
+                        onClick={() => window.open(info.link, "_blank")}
+                    />
+                ))}
+        </map>
+    );
+
+    const handleImageLoad = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [img]);
+        const imageElement = document.getElementById("myImage");
+
+        // Get the computed style of the image
+        if (imageElement) {
+            const computedStyle = window.getComputedStyle(imageElement);
+            const wwidth = parseFloat(computedStyle.width);
+            const wheight = parseFloat(computedStyle.height);
+            setWindowDims([wwidth, wheight]);
+        }
+        setImageMapData(imageMapDataDummy);
+    };
+
+    // useEffect(() => {
+    //     console.log(`Updated Heights: ${windowDims[0]}, ${windowDims[1]}`);
+    //     // Add any other logic that depends on windowWidth and windowHeight here
+    //     setImageMapData(imageMapDataDummy);
+    // }, [windowDims]);
 
     return (
         <div className="">
@@ -100,7 +173,19 @@ const TOOL = () => {
             <div className="flex flex-col md:flex-row">
                 <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-8 flex min-h-screen flex-col items-center justify-center">
                     {img ? (
-                        <img className="object-fill" src={img} alt="Received Image" />
+                        <div>
+                            <img
+                                id="myImage"
+                                className="object-fill"
+                                src={img}
+                                width={2040}
+                                height={9080}
+                                useMap="#dynamicImageMap"
+                                alt="Collage"
+                                onLoad={handleImageLoad}
+                            />
+                            {imageMap}
+                        </div>
                     ) : (
                         <>
                             <Loader />

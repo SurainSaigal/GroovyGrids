@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 import requests
 import concurrent.futures
@@ -7,6 +7,7 @@ import io
 from functools import reduce
 import time
 import os
+import base64
 import random
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ CORS(app)
 @app.route("/api/collage", methods=['POST', 'GET'])
 def hello_world():
     token = ""
+    response_data = {}
     if request.method == 'POST':
         data = request.get_json()
         token = data['access_token']
@@ -24,7 +26,8 @@ def hello_world():
         format = data['format']
         name = data['name']
         date = data['date']
-        collage = makeCollage(token, type, 100, 0, length, format, name, date)
+        collage, mapInfos = makeCollage(
+            token, type, 100, 0, length, format, name, date)
 
         start = time.time()
         image_io = io.BytesIO()
@@ -32,9 +35,17 @@ def hello_world():
         image_io.seek(0)
         print("bytesio time: " + str(time.time() - start), flush=True)
 
+        start = time.time()
+        response_data['image'] = base64.b64encode(
+            image_io.getvalue()).decode('utf-8')
+        print("decode time: " + str(time.time() - start), flush=True)
+
+        response_data['info'] = mapInfos
+        response_data['dimensions'] = collage.size
+
         collage.close()
 
-        return send_file(image_io, mimetype='image/jpeg')
+        return jsonify(response_data)
 
 
 def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, date):
@@ -49,7 +60,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     count = 1
     imgSize = 640
     albumInfos = set()
-    imageLinks = []
+    imageLinks, externalLinks, titles = [], [], []
     for i in response['items']:  # cycle through items
 
         # print info
@@ -80,6 +91,8 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         if albumInfo not in albumInfos:
             albumInfos.add(albumInfo)
             imageLinks.append(lastImg['url'])
+            externalLinks.append(i['external_urls']['spotify'])
+            titles.append(info)
 
         info += '\n' + lastImg['url']
 
@@ -117,9 +130,10 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         nameFinal = ""
     displayText = [nameFinal.upper(), timeText, typeText, date]
 
-    collage = constructCollage(images, imgSize, format, displayText)
+    collage, mapInfos = constructCollage(
+        images, imgSize, format, displayText, externalLinks, titles)
 
-    return collage
+    return collage, mapInfos
 
 
 def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format):
@@ -152,10 +166,9 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     collage.paste(toPaste, [left, upper])
 
 
-def constructCollage(images: list, imgSize: int, format, displayText):
+def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
     startCollage = time.time()
     dimensions = getDim(len(images), format)
-    # print("dimensions: " + str(dimensions))
     cols = dimensions[0]
     rows = dimensions[1]
 
@@ -180,35 +193,33 @@ def constructCollage(images: list, imgSize: int, format, displayText):
 
     finalHeight = height + yOffset
 
-    # print("img size: " + str(imgSize) + " " +
-    #       str(width) + "x" + str(finalHeight))
-
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
 
     swirls = swirls.rotate(90 * random.randint(1, 3))
 
     l = 0
-
     while l < collage.height:
         collage.paste(swirls, (0, l))
         l += swirls.height
         swirls = swirls.rotate(90)
 
     imgIndex = 0
+    mapInfos = []
     for r in range(0, rows):
         for c in range(0, cols):
+            curMapInfo = {}
             if (imgIndex >= len(images)):
                 break
             x = imgSize * c + (xOffset)
-            # if format == "SHARE":
-            #     x += int(width / 18)
-            # elif format == "INTERACT":
-            #     x += xOffset / 2
             y = imgSize * r
             if r >= 4:
                 y += yOffset  # gap for text
             collage.paste(images[imgIndex], (int(x), int(y)))
+            curMapInfo['link'] = externalLinks[imgIndex]
+            curMapInfo['title'] = titles[imgIndex]
+            curMapInfo['coordinates'] = (x, y, x + imgSize, y + imgSize)
+            mapInfos.append(curMapInfo)
             imgIndex += 1
 
     start = time.time()
@@ -218,7 +229,7 @@ def constructCollage(images: list, imgSize: int, format, displayText):
     print("text time: " + str(time.time()-start))
     print("collage time: " + str(time.time()-startCollage))
 
-    return collage
+    return collage, mapInfos
 
 
 def downloadImg(imgLink, index: int, images: list, imgSize: int):
@@ -260,8 +271,3 @@ def getDim(num, format):
 
     if format == "INTERACT":
         return [3, num // 3]
-
-
-@app.route("/api/healthchecker", methods=["GET"])
-def healthchecker():
-    return {"status": "success", "message": os.getcwd()}
