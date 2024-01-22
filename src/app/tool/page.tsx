@@ -32,6 +32,7 @@ const TOOL = () => {
     const [imageMapData, setImageMapData] = useState<ImageResponse[] | null>(null);
     const [imageMapDataDummy, setImageMapDataDummy] = useState<ImageResponse[] | null>(null);
     const [listData, setListData] = useState<[string, string][] | null>([]);
+    const [name, setName] = useState<string>("");
 
     const [cachedImages, setCachedImages] = useState<Record<string, string | null>>({});
     const [cachedImageMaps, setCachedImageMaps] = useState<
@@ -129,6 +130,10 @@ const TOOL = () => {
     };
 
     useEffect(() => {
+        const name = sessionStorage.getItem("name");
+        if (name) {
+            setName(name);
+        }
         fetchCollage();
     }, [type, length, format]);
 
@@ -307,8 +312,8 @@ const TOOL = () => {
                     )}
                     {listData && (
                         <>
-                            <div className={`${ClashDisplay.className} uppercase text-2xl mt-3`}>
-                                {sessionStorage.getItem("name")}'s Top {type} - {timeToText[length]}
+                            <div className={ClashDisplay.className + " uppercase text-2xl mt-3"}>
+                                {name}'s Top {type} - {timeToText[length]}
                             </div>
                             {listData.map((item, index) => (
                                 <div key={index}>
