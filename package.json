@@ -8,7 +8,9 @@
         "lint": "next lint",
         "flask-dev": "FLASK_DEBUG=1 pip3 install -r requirements.txt && python3 -m flask --app api/index run -p 5328",
         "next-dev": "next dev",
-        "dev": "concurrently \"npm run next-dev\" \"npm run flask-dev\""
+        "next-home": "dotenv -e .env.home -- next dev",
+        "dev": "concurrently \"npm run next-dev\" \"npm run flask-dev\"",
+        "home": "concurrently \"npm run next-home\" \"npm run flask-dev\""
     },
     "dependencies": {
         "concurrently": "^8.2.2",
@@ -23,6 +25,7 @@
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "autoprefixer": "^10.0.1",
+        "dotenv-cli": "^7.3.0",
         "eslint": "^8",
         "eslint-config-next": "14.0.4",
         "postcss": "^8",

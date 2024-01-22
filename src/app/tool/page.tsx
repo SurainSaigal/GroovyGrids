@@ -313,9 +313,11 @@ const TOOL = () => {
                                     Save Image
                                 </button>
                             </a>
-                            <button
-                                onClick={async () => {
-                                    if (navigator.share) {
+
+                            {navigator.share && (
+                                <button
+                                    className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
+                                    onClick={async () => {
                                         try {
                                             await navigator.share({
                                                 title: "Groovy Grids",
@@ -328,11 +330,11 @@ const TOOL = () => {
                                                 error
                                             );
                                         }
-                                    }
-                                }}
-                            >
-                                Poop
-                            </button>
+                                    }}
+                                >
+                                    Share
+                                </button>
+                            )}
                         </>
                     )}
                     {listData && (
