@@ -323,12 +323,14 @@ const TOOL = () => {
                                                 files: [
                                                     new File(
                                                         [await (await fetch(img)).blob()],
-                                                        "image.jpg",
+                                                        "groovy_grids_" +
+                                                            type +
+                                                            "_" +
+                                                            length +
+                                                            ".jpg",
                                                         { type: "image/jpeg" }
                                                     ),
                                                 ],
-                                                title: "Share Image Example",
-                                                text: "Check out this amazing image!",
                                             })
                                             .then(() => console.log("Successfully shared"))
                                             .catch((error) =>
