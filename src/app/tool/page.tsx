@@ -2,12 +2,26 @@
 import React, { useRef, useEffect, useState } from "react";
 import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
+import localFont from "next/font/local";
+import { time } from "console";
+import { set } from "zod";
 
 interface ImageResponse {
     link: string;
     title: string;
     coordinates: [number, number, number, number];
 }
+
+interface Dictionary {
+    [key: string]: string;
+}
+
+const timeToText: Dictionary = {
+    short_term: "Last Month",
+    medium_term: "Last 6 Months",
+    long_term: "All Time",
+};
+const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
 const TOOL = () => {
     const [failed, setFailed] = useState(false);
@@ -19,6 +33,7 @@ const TOOL = () => {
     const [dims, setDims] = useState([0, 0]);
     const [imageMapData, setImageMapData] = useState<ImageResponse[] | null>(null);
     const [imageMapDataDummy, setImageMapDataDummy] = useState<ImageResponse[] | null>(null);
+    const [listData, setListData] = useState<[string, string][] | null>([]);
 
     const [cachedImages, setCachedImages] = useState<Record<string, string | null>>({});
     const [cachedImageMaps, setCachedImageMaps] = useState<
@@ -48,7 +63,6 @@ const TOOL = () => {
             .then((data) => {
                 setFailed(false);
                 const imageResponses: ImageResponse[] = data.info;
-                //setDims(data.dimensions);
                 fetch(`data:image/jpeg;base64,${data.image}`)
                     .then((response) => response.blob())
                     .then((blob) => {
@@ -76,13 +90,34 @@ const TOOL = () => {
                     performFetch(thisFormat, display);
                 }
             });
+
+        if (display) {
+            fetchList();
+        }
+    };
+
+    const fetchList = () => {
+        fetch("/node_api/getList", {
+            method: "POST",
+            body: JSON.stringify({
+                item_type: type,
+                time_range: length,
+                auth_token: sessionStorage.getItem("auth_token"),
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setListData(data.infos);
+            });
     };
 
     const fetchCollage = () => {
         setImg(null);
         setImageMapData(null);
         setImageMapDataDummy(null);
+        setListData(null);
         if (cachedImages[cacheKey] && cachedImageMaps[cacheKey]) {
+            fetchList();
             setImageMapDataDummy(cachedImageMaps[cacheKey][0]);
             setDims(cachedImageMaps[cacheKey][1]);
             setImg(cachedImages[cacheKey]);
@@ -93,33 +128,6 @@ const TOOL = () => {
 
         const otherFormat = format === "INTERACT" ? "SHARE" : "INTERACT";
         performFetch(otherFormat, false);
-        // fetch("/api/collage", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //         Origin: process.env.NEXT_PUBLIC_URI || "home",
-        //     },
-        //     body: JSON.stringify({
-        //         access_token: sessionStorage.getItem("auth_token"),
-        //         length: length,
-        //         type: type,
-        //         format: otherFormat,
-        //         name: sessionStorage.getItem("name"),
-        //         date: sessionStorage.getItem("date"),
-        //     }),
-        // })
-        //     .then((response) => response.json())
-        //     .then((data) => {
-        //         fetch(`data:image/jpeg;base64,${data.image}`)
-        //             .then((response) => response.blob())
-        //             .then((blob) => {
-        //                 const url = URL.createObjectURL(blob);
-        //                 setCachedImages((prevCachedImages) => ({
-        //                     ...prevCachedImages,
-        //                     [`${type}_${length}_${otherFormat}`]: url,
-        //                 }));
-        //             });
-        //     });
     };
 
     useEffect(() => {
@@ -161,19 +169,13 @@ const TOOL = () => {
         setImageMapData(imageMapDataDummy);
     };
 
-    // useEffect(() => {
-    //     console.log(`Updated Heights: ${windowDims[0]}, ${windowDims[1]}`);
-    //     // Add any other logic that depends on windowWidth and windowHeight here
-    //     setImageMapData(imageMapDataDummy);
-    // }, [windowDims]);
-
     return (
         <div className="">
             {/* <LogoutButton /> */}
             <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-8 flex min-h-screen flex-col items-center justify-center">
+                <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-8 flex flex-col items-center">
                     {img ? (
-                        <div>
+                        <div className="flex flex-col justify-start items-center">
                             <img
                                 id="myImage"
                                 className="object-fill"
@@ -187,9 +189,9 @@ const TOOL = () => {
                             {imageMap}
                         </div>
                     ) : (
-                        <>
+                        <div className="flex min-h-screen flex-col justify-center items-center">
                             <Loader />
-                        </>
+                        </div>
                     )}
                     {failed && (
                         <>
@@ -298,6 +300,32 @@ const TOOL = () => {
                             Shareable
                         </button>
                     </div>
+                    {img && (
+                        <a href={img ? img : "#"} download>
+                            <button className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]">
+                                Save Image
+                            </button>
+                        </a>
+                    )}
+                    {listData && (
+                        <>
+                            <div className={`${ClashDisplay.className} uppercase text-2xl mt-3`}>
+                                {sessionStorage.getItem("name")}'s Top {type} - {timeToText[length]}
+                            </div>
+                            {listData.map((item, index) => (
+                                <div key={index}>
+                                    <a
+                                        href={item[1]}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-purple-500"
+                                    >
+                                        {index + 1}. {item[0]}
+                                    </a>
+                                </div>
+                            ))}
+                        </>
+                    )}
                 </div>
             </div>
         </div>
