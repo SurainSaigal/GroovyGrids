@@ -318,18 +318,22 @@ const TOOL = () => {
                                 <button
                                     className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
                                     onClick={async () => {
-                                        try {
-                                            await navigator.share({
-                                                title: "Groovy Grids",
-                                                text: "Check out this image!",
-                                                url: img,
-                                            });
-                                        } catch (error) {
-                                            console.error(
-                                                "Something went wrong sharing the image",
-                                                error
+                                        navigator
+                                            .share({
+                                                files: [
+                                                    new File(
+                                                        [await (await fetch(img)).blob()],
+                                                        "image.jpg",
+                                                        { type: "image/jpeg" }
+                                                    ),
+                                                ],
+                                                title: "Share Image Example",
+                                                text: "Check out this amazing image!",
+                                            })
+                                            .then(() => console.log("Successfully shared"))
+                                            .catch((error) =>
+                                                console.error("Error sharing:", error)
                                             );
-                                        }
                                     }}
                                 >
                                     Share
