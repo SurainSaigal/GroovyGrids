@@ -1,10 +1,8 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
 import localFont from "next/font/local";
-import { time } from "console";
-import { set } from "zod";
 
 interface ImageResponse {
     link: string;
