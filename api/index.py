@@ -82,24 +82,25 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         else:
             pics = i['images']
 
-        lastImg = pics[0]  # last pic is smallest pixels
-        # print(item_type + str(lastImg['width']))
+        if len(pics) > 0:
+            lastImg = pics[0]  # last pic is smallest pixels
+            # print(item_type + str(lastImg['width']))
 
-        # if (lastImg['width'] < imgSize):  # maintain accurate size
-        #     imgSize = lastImg['width']
+            # if (lastImg['width'] < imgSize):  # maintain accurate size
+            #     imgSize = lastImg['width']
 
-        if albumInfo not in albumInfos:
-            albumInfos.add(albumInfo)
-            imageLinks.append(lastImg['url'])
-            externalLinks.append(i['external_urls']['spotify'])
-            titles.append(info)
+            if albumInfo not in albumInfos:
+                albumInfos.add(albumInfo)
+                imageLinks.append(lastImg['url'])
+                externalLinks.append(i['external_urls']['spotify'])
+                titles.append(info)
 
-        info += '\n' + lastImg['url']
+            info += '\n' + lastImg['url']
 
-        # print(str(count) + '. ' + info)  # track info
-        # print("ALBUM: " + albumInfo + "\n")
+            # print(str(count) + '. ' + info)  # track info
+            # print("ALBUM: " + albumInfo + "\n")
 
-        count += 1
+            count += 1
 
     images = [""] * len(imageLinks)
     start = time.time()
