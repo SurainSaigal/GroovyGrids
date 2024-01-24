@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
 import localFont from "next/font/local";
+import { BiSolidRightArrow, BiSolidUpArrow } from "react-icons/bi";
 
 interface ImageResponse {
     link: string;
@@ -38,6 +39,12 @@ const TOOL = () => {
     const [cachedImageMaps, setCachedImageMaps] = useState<
         Record<string, [ImageResponse[], [number, number]]>
     >({});
+    const [isExpanded, setIsExpanded] = useState(false);
+    let displayedItems;
+    if (listData) {
+        displayedItems = isExpanded ? listData : listData.slice(0, 3);
+    }
+
     const cacheKey = `${type}_${length}_${format}`;
 
     const performFetch = (thisFormat: string, display: boolean) => {
@@ -49,12 +56,12 @@ const TOOL = () => {
                 Origin: process.env.NEXT_PUBLIC_URI || "home",
             },
             body: JSON.stringify({
-                access_token: sessionStorage.getItem("auth_token"),
+                access_token: localStorage.getItem("auth_token"),
                 length: length,
                 type: type,
                 format: thisFormat,
-                name: sessionStorage.getItem("name"),
-                date: sessionStorage.getItem("date"),
+                name: localStorage.getItem("name"),
+                date: localStorage.getItem("date"),
             }),
             signal: AbortSignal.timeout(12000),
         })
@@ -101,7 +108,7 @@ const TOOL = () => {
             body: JSON.stringify({
                 item_type: type,
                 time_range: length,
-                auth_token: sessionStorage.getItem("auth_token"),
+                auth_token: localStorage.getItem("auth_token"),
             }),
         })
             .then((response) => response.json())
@@ -130,7 +137,7 @@ const TOOL = () => {
     };
 
     useEffect(() => {
-        const name = sessionStorage.getItem("name");
+        const name = localStorage.getItem("name");
         if (name) {
             setName(name);
         }
@@ -200,6 +207,48 @@ const TOOL = () => {
                         <>
                             <p className="mt-4">Taking longer than expected...</p>
                         </>
+                    )}
+                    {img && (
+                        <div>
+                            {navigator.share && (
+                                <button
+                                    className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
+                                    onClick={async () => {
+                                        const shareable = cachedImages[`${type}_${length}_SHARE`];
+                                        if (shareable) {
+                                            navigator
+                                                .share({
+                                                    files: [
+                                                        new File(
+                                                            [await (await fetch(shareable)).blob()],
+                                                            "groovy_grids_" +
+                                                                type +
+                                                                "_" +
+                                                                length +
+                                                                ".jpg",
+                                                            { type: "image/jpeg" }
+                                                        ),
+                                                    ],
+                                                })
+                                                .then(() => console.log("Successfully shared"))
+                                                .catch((error) =>
+                                                    console.error("Error sharing:", error)
+                                                );
+                                        }
+                                    }}
+                                >
+                                    Share
+                                </button>
+                            )}
+                            <a
+                                href={img ? img : "#"}
+                                download={"groovy_grids_" + type + "_" + length + ".jpg"}
+                            >
+                                <button className="ml-5 mt-6 text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
+                                    Save Image
+                                </button>
+                            </a>
+                        </div>
                     )}
                 </div>
                 <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
@@ -303,52 +352,18 @@ const TOOL = () => {
                             Shareable
                         </button>
                     </div>
-                    {img && (
-                        <>
-                            <a
-                                href={img ? img : "#"}
-                                download={"groovy_grids_" + type + "_" + length + ".jpg"}
-                            >
-                                <button className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]">
-                                    Save Image
-                                </button>
-                            </a>
 
-                            {navigator.share && (
-                                <button
-                                    className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
-                                    onClick={async () => {
-                                        navigator
-                                            .share({
-                                                files: [
-                                                    new File(
-                                                        [await (await fetch(img)).blob()],
-                                                        "groovy_grids_" +
-                                                            type +
-                                                            "_" +
-                                                            length +
-                                                            ".jpg",
-                                                        { type: "image/jpeg" }
-                                                    ),
-                                                ],
-                                            })
-                                            .then(() => console.log("Successfully shared"))
-                                            .catch((error) =>
-                                                console.error("Error sharing:", error)
-                                            );
-                                    }}
-                                >
-                                    Share
-                                </button>
-                            )}
-                        </>
-                    )}
-                    {listData && (
-                        <>
-                            <div className={ClashDisplay.className + " uppercase text-2xl mt-3"}>
+                    {displayedItems && (
+                        <div className="flex flex-col">
+                            <div
+                                className={
+                                    ClashDisplay.className +
+                                    " uppercase text-lg sm:text-lg md:text-lg lg:text-2xl mt-3"
+                                }
+                            >
                                 {name}'s Top {type} - {timeToText[length]}
                             </div>
-                            {listData.map((item, index) => (
+                            {displayedItems.map((item, index) => (
                                 <div key={index}>
                                     <a
                                         href={item[1]}
@@ -360,7 +375,23 @@ const TOOL = () => {
                                     </a>
                                 </div>
                             ))}
-                        </>
+                            {!isExpanded && (
+                                <button
+                                    className="text-gray-500"
+                                    onClick={() => setIsExpanded(true)}
+                                >
+                                    see all <BiSolidRightArrow className="inline-block mb-1" />
+                                </button>
+                            )}
+                            {isExpanded && (
+                                <button
+                                    className="text-gray-500"
+                                    onClick={() => setIsExpanded(false)}
+                                >
+                                    <BiSolidUpArrow className="inline-block mb-1" />
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>

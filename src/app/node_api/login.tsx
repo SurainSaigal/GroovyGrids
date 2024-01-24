@@ -13,7 +13,7 @@ function generateRandomString(length: number) {
 
 function LoginHandler() {
     const state = generateRandomString(16);
-    sessionStorage.setItem("spotifyAuthState", state);
+    localStorage.setItem("spotifyAuthState", state);
     const scope = "user-top-read user-read-private user-read-email";
 
     const authorizationUrl = `https://accounts.spotify.com/authorize?${querystring.stringify({

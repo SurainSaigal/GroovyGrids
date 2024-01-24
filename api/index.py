@@ -165,6 +165,10 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
 
     collage.paste(toPaste, [left, upper])
 
+    urlDraw = ImageDraw.Draw(collage)
+    urlDraw.text((60, collage.height - 100),
+                 "groovygrids.vercel.app", font=font, fill=(0, 0, 0))
+
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
     startCollage = time.time()
@@ -172,7 +176,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     cols = dimensions[0]
     rows = dimensions[1]
 
-    xOffset = yOffset = width = fontSize = 0
+    xOffset = yOffset = width = fontSize = top = 0
     height = imgSize * rows
 
     if format == "SHARE":
@@ -189,9 +193,10 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
         fontSize = 75
         xOffset = 60
         yOffset = 120
+        top = 60
         width = imgSize * cols + xOffset * 2
 
-    finalHeight = height + yOffset
+    finalHeight = height + yOffset + top * 3
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
@@ -212,7 +217,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             if (imgIndex >= len(images)):
                 break
             x = imgSize * c + (xOffset)
-            y = imgSize * r
+            y = top + (imgSize * r)
             if r >= 4:
                 y += yOffset  # gap for text
             collage.paste(images[imgIndex], (int(x), int(y)))
@@ -224,8 +229,17 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
 
     start = time.time()
 
-    drawText(collage, int(xOffset), int(imgSize * 4), int(width -
-             xOffset), int(imgSize * 4 + yOffset), displayText, fontSize, format)
+    drawText(collage, int(xOffset), int(imgSize * 4 + top), int(width -
+             xOffset), int(imgSize * 4 + yOffset + top), displayText, fontSize, format)
+
+    # (top * 2) / height = x / width
+    collage = collage.convert("RGBA")
+    if format == "INTERACT":
+        logo = Image.open("./public/assets/images/logo_white.png")
+        logo = logo.convert("RGBA")
+        collage.alpha_composite(
+            logo, (width - 365, int(finalHeight - (top) * 1.75)))
+    collage = collage.convert("RGB")
     print("text time: " + str(time.time()-start))
     print("collage time: " + str(time.time()-startCollage))
 

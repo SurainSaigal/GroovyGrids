@@ -14,7 +14,7 @@ const Callback = () => {
     useEffect(() => {
         const fetchToken = async () => {
             try {
-                if (sessionStorage.getItem("spotifyAuthState") !== state) {
+                if (localStorage.getItem("spotifyAuthState") !== state) {
                     throw new Error("AuthState mismatch.");
                 }
                 const requestBody = {
@@ -31,8 +31,8 @@ const Callback = () => {
                 }
 
                 const data = await response.json();
-                sessionStorage.setItem("auth_token", data.token);
-                sessionStorage.setItem("name", data.name);
+                localStorage.setItem("auth_token", data.token);
+                localStorage.setItem("name", data.name);
 
                 const formatDate = () => {
                     const date = new Date();
@@ -40,7 +40,7 @@ const Callback = () => {
                     const dd = String(date.getDate()).padStart(2, "0");
                     const yy = String(date.getFullYear()).slice(-2);
                     const dateString = `${mm}/${dd}/${yy}`;
-                    sessionStorage.setItem("date", dateString);
+                    localStorage.setItem("date", dateString);
                 };
                 formatDate();
 
