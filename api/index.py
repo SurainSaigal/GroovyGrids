@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 from functools import reduce
 import time
-import os
 import base64
 import random
 
@@ -84,11 +83,6 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
 
         if len(pics) > 0:
             lastImg = pics[0]  # last pic is smallest pixels
-            # print(item_type + str(lastImg['width']))
-
-            # if (lastImg['width'] < imgSize):  # maintain accurate size
-            #     imgSize = lastImg['width']
-
             if albumInfo not in albumInfos:
                 albumInfos.add(albumInfo)
                 imageLinks.append(lastImg['url'])
@@ -101,7 +95,6 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
             # print("ALBUM: " + albumInfo + "\n")
 
             count += 1
-
     images = [""] * len(imageLinks)
     start = time.time()
     with concurrent.futures.ThreadPoolExecutor(len(imageLinks)) as executor:
@@ -125,10 +118,14 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     else:
         typeText = "TOP TRACKS"
     nameSplit = name.split()
-    if len(nameSplit[0]) <= 12:
+
+    if len(nameSplit[0]) <= 16:
         nameFinal = nameSplit[0].upper() + "'S "
     else:
         nameFinal = ""
+
+    if format == "INTERACT":
+        date = ""
     displayText = [nameFinal.upper(), timeText, typeText, date]
 
     collage, mapInfos = constructCollage(
@@ -152,6 +149,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     textDraw = ImageDraw.Draw(text)
     textDraw.text((15, rect.height // 2), leftText,
                   font=font, anchor="lm", fill=255)
+    # if format == "SHARE" or (format == "INTERACT" and len(displayText[0]) <= 12):
     textDraw.text((date_offset, rect.height // 2), displayText[3],
                   font=font, anchor="mm", fill=255)
     textDraw.text((rect.width - 15, rect.height // 2), displayText[1],
@@ -167,8 +165,9 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     collage.paste(toPaste, [left, upper])
 
     urlDraw = ImageDraw.Draw(collage)
-    urlDraw.text((60, collage.height - 100),
-                 "groovygrids.vercel.app", font=font, fill=(0, 0, 0))
+    if format == "INTERACT":
+        urlDraw.text((60, collage.height - 200),
+                     "groovygrids.vercel.app", font=font, fill=(0, 0, 0))
 
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
@@ -180,8 +179,16 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     xOffset = yOffset = width = fontSize = top = 0
     height = imgSize * rows
 
+    name = displayText[0]
+
     if format == "SHARE":
-        fontSize = 95
+        if len(name) > 12:
+            fontSize = 76
+        elif len(name) > 9:
+            fontSize = 82
+        else:
+            fontSize = 95
+
         yOffset = 96
         if len(images) >= 32:
             factor = (height + yOffset) / 16
@@ -191,13 +198,16 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             width = 2880
             xOffset = 90
     elif format == "INTERACT":
-        fontSize = 75
+        if len(name) > 12:
+            fontSize = 68
+        else:
+            fontSize = 75
         xOffset = 60
         yOffset = 120
         top = 60
         width = imgSize * cols + xOffset * 2
 
-    finalHeight = height + yOffset + top * 3
+    finalHeight = height + yOffset + top * 3 + 60
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
@@ -233,13 +243,16 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     drawText(collage, int(xOffset), int(imgSize * 4 + top), int(width -
              xOffset), int(imgSize * 4 + yOffset + top), displayText, fontSize, format)
 
-    # (top * 2) / height = x / width
     collage = collage.convert("RGBA")
     if format == "INTERACT":
         logo = Image.open("./public/assets/images/logo_white.png")
         logo = logo.convert("RGBA")
         collage.alpha_composite(
-            logo, (width - 365, int(finalHeight - (top) * 1.75)))
+            logo, (width - 365, int(finalHeight - (top) * 2.15)))
+    else:
+        icon = Image.open("./public/assets/images/icon.png")
+        icon = icon.convert("RGBA")
+        collage.alpha_composite(icon, (10, finalHeight - 185))
     collage = collage.convert("RGB")
     print("text time: " + str(time.time()-start))
     print("collage time: " + str(time.time()-startCollage))
@@ -268,16 +281,7 @@ def factorTuples(n):
 
 
 def getDim(num, format):
-    # MAX_DIFF = 4  # maintain squareness
-    # smallest = [0, 0]
-    # while (smallest[0] == 0):
-    #     factors = factorTuples(num)
-    #     smallestDiff = factors[len(factors) - 1]
-    #     diff = smallestDiff[1] - smallestDiff[0]
-    #     if (diff <= MAX_DIFF):
-    #         smallest[0] = smallestDiff[0]
-    #         smallest[1] = smallestDiff[1]
-    #     num -= 1
+
     if format == "SHARE":
         if num >= 32:
             return [4, 8]

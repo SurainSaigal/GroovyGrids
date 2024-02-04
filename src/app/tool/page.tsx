@@ -4,6 +4,7 @@ import LogoutButton from "../components/LogoutButton";
 import Loader from "../components/Loader";
 import localFont from "next/font/local";
 import { BiSolidRightArrow, BiSolidUpArrow } from "react-icons/bi";
+import { FaRegSadTear } from "react-icons/fa";
 
 interface ImageResponse {
     link: string;
@@ -23,6 +24,7 @@ const timeToText: Dictionary = {
 const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
 const TOOL = () => {
+    const [collageFailed, setCollageFailed] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
     const [img, setImg] = useState<string | null>(null);
     const [type, setType] = useState("tracks");
@@ -63,7 +65,7 @@ const TOOL = () => {
                 name: localStorage.getItem("name"),
                 date: localStorage.getItem("date"),
             }),
-            signal: AbortSignal.timeout(12000),
+            signal: AbortSignal.timeout(40000),
         })
             .then((response) => response.json())
             .then((data) => {
@@ -84,16 +86,20 @@ const TOOL = () => {
                         if (display) {
                             setDims(data.dimensions);
                             setImageMapDataDummy(imageResponses);
+                            setCollageFailed(null);
                             setImg(url);
                         }
                     });
             })
             .catch((error) => {
-                setFailed(true);
                 console.error("Fetch error:", error);
                 if (error.name === "AbortError") {
+                    setFailed(true);
                     console.log("retrying");
                     performFetch(thisFormat, display);
+                } else {
+                    setCollageFailed(error);
+                    setImg("failed");
                 }
             });
 
@@ -118,6 +124,7 @@ const TOOL = () => {
     };
 
     const fetchCollage = () => {
+        setCollageFailed(null);
         setImg(null);
         setImageMapData(null);
         setImageMapDataDummy(null);
@@ -131,7 +138,6 @@ const TOOL = () => {
         }
 
         performFetch(format, true);
-
         const otherFormat = format === "INTERACT" ? "SHARE" : "INTERACT";
         performFetch(otherFormat, false);
     };
@@ -159,7 +165,9 @@ const TOOL = () => {
                         alt={info.title}
                         title={info.title}
                         className="hover:cursor-pointer"
-                        onClick={() => window.open(info.link, "_blank")}
+                        href={info.link}
+                        target="_blank"
+                        //onClick={() => window.open(info.link, "_blank")}
                     />
                 ))}
         </map>
@@ -184,7 +192,7 @@ const TOOL = () => {
             {/* <LogoutButton /> */}
             <div className="flex flex-col md:flex-row">
                 <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-8 flex flex-col items-center">
-                    {img ? (
+                    {img && img !== "failed" ? (
                         <div className="flex flex-col justify-start items-center">
                             <img
                                 id="myImage"
@@ -199,18 +207,26 @@ const TOOL = () => {
                             {imageMap}
                         </div>
                     ) : (
-                        <div className="flex min-h-screen flex-col justify-center items-center">
-                            <Loader />
-                        </div>
+                        !collageFailed && (
+                            <div className="flex min-h-screen flex-col justify-center items-center">
+                                <Loader />
+                            </div>
+                        )
                     )}
                     {failed && (
                         <>
                             <p className="mt-4">Taking longer than expected...</p>
                         </>
                     )}
-                    {img && (
+                    {collageFailed && (
+                        <div className="flex min-h-screen flex-col justify-center items-center">
+                            <FaRegSadTear className="text-4xl text-gray-500" />
+                            <p>Collage generation failed.</p>
+                        </div>
+                    )}
+                    {img && img !== "failed" && (
                         <div>
-                            {navigator.share && (
+                            {/* {navigator.share && (
                                 <button
                                     className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
                                     onClick={async () => {
@@ -239,7 +255,7 @@ const TOOL = () => {
                                 >
                                     Share
                                 </button>
-                            )}
+                            )} */}
                             <a
                                 href={img ? img : "#"}
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
@@ -251,8 +267,11 @@ const TOOL = () => {
                         </div>
                     )}
                 </div>
-                <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
-                    <p>Collage Type</p>
+                <div className="md:w-1/2 mr-8 ml-8 place-content-center min-h-screen items-center justify-center">
+                    <p className={ClashDisplay.className + " flex justify-center text-7xl mt-20"}>
+                        Groovy Grids
+                    </p>
+                    {/* <p>Collage Type</p>
                     <div>
                         <button
                             className={
@@ -280,7 +299,7 @@ const TOOL = () => {
                         >
                             Artists
                         </button>
-                    </div>
+                    </div> */}
                     <p className="mt-3">Length</p>
                     <div className="">
                         <button
@@ -323,7 +342,7 @@ const TOOL = () => {
                             All Time
                         </button>
                     </div>
-                    <p className="mt-3">Format</p>
+                    {/* <p className="mt-3">Format</p>
                     <div className="">
                         <button
                             className={
@@ -351,10 +370,11 @@ const TOOL = () => {
                         >
                             Shareable
                         </button>
-                    </div>
+                    </div> */}
 
                     {displayedItems && (
                         <div className="flex flex-col">
+                            <p className="mt-4">Click on an image or song title to view a song!</p>
                             <div
                                 className={
                                     ClashDisplay.className +
@@ -393,6 +413,12 @@ const TOOL = () => {
                             )}
                         </div>
                     )}
+                    <div className="flex justify-center">
+                        <img
+                            className="w-32 mt-6"
+                            src="/assets/images/Spotify_Logo_RGB_Green.png"
+                        ></img>
+                    </div>
                 </div>
             </div>
         </div>
