@@ -24,7 +24,7 @@ const timeToText: Dictionary = {
 const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
 const TOOL = () => {
-    if (!localStorage.getItem("auth_token")) {
+    if (typeof window !== "undefined" && !localStorage.getItem("auth_token")) {
         window.location.href = "/";
     }
     const [collageFailed, setCollageFailed] = useState<string | null>(null);
