@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import LogoutButton from "../components/LogoutButton";
+import BottomBar from "../components/BottomBar";
 import Loader from "../components/Loader";
 import localFont from "next/font/local";
 import { BiSolidRightArrow, BiSolidUpArrow } from "react-icons/bi";
@@ -24,6 +24,9 @@ const timeToText: Dictionary = {
 const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
 const TOOL = () => {
+    if (!localStorage.getItem("auth_token")) {
+        window.location.href = "/";
+    }
     const [collageFailed, setCollageFailed] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
     const [img, setImg] = useState<string | null>(null);
@@ -226,7 +229,7 @@ const TOOL = () => {
                     )}
                     {img && img !== "failed" && (
                         <div>
-                            {/* {navigator.share && (
+                            {navigator.share && (
                                 <button
                                     className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
                                     onClick={async () => {
@@ -255,7 +258,7 @@ const TOOL = () => {
                                 >
                                     Share
                                 </button>
-                            )} */}
+                            )}
                             <a
                                 href={img ? img : "#"}
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
@@ -268,10 +271,14 @@ const TOOL = () => {
                     )}
                 </div>
                 <div className="md:w-1/2 mr-8 ml-8 place-content-center min-h-screen items-center justify-center">
-                    <p className={ClashDisplay.className + " flex justify-center text-7xl mt-20"}>
+                    <p
+                        className={
+                            ClashDisplay.className + " flex justify-center text-7xl mt-10 mb-4"
+                        }
+                    >
                         Groovy Grids
                     </p>
-                    {/* <p>Collage Type</p>
+                    <p>Collage Type</p>
                     <div>
                         <button
                             className={
@@ -299,7 +306,7 @@ const TOOL = () => {
                         >
                             Artists
                         </button>
-                    </div> */}
+                    </div>
                     <p className="mt-3">Length</p>
                     <div className="">
                         <button
@@ -342,7 +349,7 @@ const TOOL = () => {
                             All Time
                         </button>
                     </div>
-                    {/* <p className="mt-3">Format</p>
+                    <p className="mt-3">Format</p>
                     <div className="">
                         <button
                             className={
@@ -370,7 +377,7 @@ const TOOL = () => {
                         >
                             Shareable
                         </button>
-                    </div> */}
+                    </div>
 
                     {displayedItems && (
                         <div className="flex flex-col">
@@ -421,6 +428,7 @@ const TOOL = () => {
                     </div>
                 </div>
             </div>
+            <BottomBar login={false} />
         </div>
     );
 };

@@ -166,7 +166,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
 
     urlDraw = ImageDraw.Draw(collage)
     if format == "INTERACT":
-        urlDraw.text((60, collage.height - 200),
+        urlDraw.text((60, collage.height - 130),
                      "groovygrids.vercel.app", font=font, fill=(0, 0, 0))
 
 
@@ -207,7 +207,8 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
         top = 60
         width = imgSize * cols + xOffset * 2
 
-    finalHeight = height + yOffset + top * 3 + 60
+    finalHeight = height + yOffset + top * \
+        3 + (60 if format == "INTERACT" else 0)
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
