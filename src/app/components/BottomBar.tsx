@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import LogOut from "./LogOut";
 interface BottomBarProps {
     login: boolean;
 }
@@ -23,7 +23,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ login }) => {
                     <>
                         <p className="text-gray-500 text-sm ml-1"> | </p>
                         <p className="text-blue-500 text-sm ml-1">
-                            <Link href="/">log out</Link>
+                            <LogOut />
                         </p>
                     </>
                 )}

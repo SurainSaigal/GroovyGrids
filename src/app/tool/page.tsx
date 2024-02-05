@@ -5,6 +5,8 @@ import Loader from "../components/Loader";
 import localFont from "next/font/local";
 import { BiSolidRightArrow, BiSolidUpArrow } from "react-icons/bi";
 import { FaRegSadTear } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import local from "next/font/local";
 
 interface ImageResponse {
     link: string;
@@ -24,8 +26,9 @@ const timeToText: Dictionary = {
 const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
 const TOOL = () => {
-    if (typeof window !== "undefined" && !localStorage.getItem("auth_token")) {
-        window.location.href = "/";
+    const router = useRouter();
+    if (typeof window !== "undefined" && localStorage.getItem("auth_token") === null) {
+        router.push("/");
     }
     const [collageFailed, setCollageFailed] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
@@ -103,6 +106,9 @@ const TOOL = () => {
                 } else {
                     setCollageFailed(error);
                     setImg("failed");
+                    if (typeof window !== "undefined") {
+                        router.push("/");
+                    }
                 }
             });
 
