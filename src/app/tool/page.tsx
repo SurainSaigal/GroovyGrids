@@ -270,14 +270,7 @@ const TOOL = () => {
                         </div>
                     )}
                 </div>
-                <div className="md:w-1/2 mr-8 ml-8 place-content-center min-h-screen items-center justify-center">
-                    <p
-                        className={
-                            ClashDisplay.className + " flex justify-center text-7xl mt-10 mb-4"
-                        }
-                    >
-                        Groovy Grids
-                    </p>
+                <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
                     <p>Collage Type</p>
                     <div>
                         <button
