@@ -14,7 +14,7 @@ function generateRandomString(length: number) {
 function LoginHandler() {
     const state = generateRandomString(16);
     localStorage.setItem("spotifyAuthState", state);
-    const scope = "user-top-read user-read-private user-read-email";
+    const scope = "user-top-read user-read-email";
 
     const authorizationUrl = `https://accounts.spotify.com/authorize?${querystring.stringify({
         response_type: "code",
@@ -22,7 +22,7 @@ function LoginHandler() {
         scope: scope,
         redirect_uri: process.env.NEXT_PUBLIC_URI + "callback",
         state: state,
-        show_dialog: "true",
+        show_dialog: "false",
     })}`;
     window.location.href = authorizationUrl;
 }
