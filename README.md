@@ -8,7 +8,8 @@ Please note that Groovy Grids is currently in the process of being approved for 
 
 Please view the demos below!
 
-![IMG_5896](https://github.com/SurainSaigal/groovy-grids/assets/73139209/9e1a980d-0da1-4548-abcb-44f96ff7f3a2 | width=100)
+
+<img src="[https://your-image-url.type](https://github.com/SurainSaigal/groovy-grids/assets/73139209/9e1a980d-0da1-4548-abcb-44f96ff7f3a2)" width="200">
 ![IMG_5897](https://github.com/SurainSaigal/groovy-grids/assets/73139209/a4ce4cb5-b0e0-4526-b644-b628f5773523)
 ![IMG_5898](https://github.com/SurainSaigal/groovy-grids/assets/73139209/506906af-4b56-4f8c-b6f7-1b2fa0cf578a)
 
