@@ -31,17 +31,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ login }) => {
             <div className="flex justify-center">
                 <p className="text-gray-500 text-sm ml-1"> © 2024 groovy grids </p>
                 <p className="text-gray-500 text-sm ml-1"> | </p>
-                <p className="text-gray-500 text-sm ml-1">
-                    {" "}
-                    made by{" "}
-                    <a
-                        className="text-blue-500"
-                        href="https://github.com/SurainSaigal"
-                        target="_blank"
-                    >
-                        surain saigal
-                    </a>
-                </p>
+                <p className="text-gray-500 text-sm ml-1"> made by surain saigal</p>
             </div>
         </div>
     );
