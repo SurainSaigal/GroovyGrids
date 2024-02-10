@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file, jsonify, abort
 from flask_cors import CORS
 import requests
 import concurrent.futures
@@ -25,9 +25,11 @@ def hello_world():
         format = data['format']
         name = data['name']
         date = data['date']
-        collage, mapInfos = makeCollage(
+        collage, mapInfos, status = makeCollage(
             token, type, 100, 0, length, format, name, date)
 
+        if status == 409:
+            abort(409)
         start = time.time()
         image_io = io.BytesIO()
         collage.save(image_io, format='JPEG')
@@ -54,8 +56,11 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         str(limit) + '&offset=' + str(offset) + '&time_range=' + time_range
 
     response = requests.get(url=req_url, headers={
-        "Authorization": "Bearer " + auth_token, "Content-Type": "application/json"}).json()
+        "Authorization": "Bearer " + auth_token, "Content-Type": "application/json"})
 
+    if not response.ok:
+        return None, None, 409
+    response = response.json()
     count = 1
     imgSize = 640
     albumInfos = set()
@@ -131,7 +136,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     collage, mapInfos = constructCollage(
         images, imgSize, format, displayText, externalLinks, titles)
 
-    return collage, mapInfos
+    return collage, mapInfos, 200
 
 
 def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format):
@@ -195,8 +200,8 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             width = factor * 9
             xOffset = (width - (imgSize * cols)) // 2
         else:
-            width = 2880
-            xOffset = 90
+            width = 2934
+            xOffset = 187
     elif format == "INTERACT":
         if len(name) > 12:
             fontSize = 68

@@ -73,7 +73,12 @@ const TOOL = () => {
             }),
             signal: AbortSignal.timeout(40000),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (response.status === 409) {
+                    throw new Error("Spotify API Error");
+                }
+                return response.json();
+            })
             .then((data) => {
                 setFailed(false);
                 const imageResponses: ImageResponse[] = data.info;
@@ -98,17 +103,20 @@ const TOOL = () => {
                     });
             })
             .catch((error) => {
-                console.error("Fetch error:", error);
+                //console.log("error name", error.message);
                 if (error.name === "AbortError") {
                     setFailed(true);
                     console.log("retrying");
                     performFetch(thisFormat, display);
-                } else {
+                } else if (error.message === "Spotify API Error") {
                     setCollageFailed(error);
                     setImg("failed");
                     if (typeof window !== "undefined") {
                         router.push("/");
                     }
+                } else {
+                    setCollageFailed(error);
+                    setImg("failed");
                 }
             });
 
@@ -200,7 +208,7 @@ const TOOL = () => {
         <div className="">
             {/* <LogoutButton /> */}
             <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-8 flex flex-col items-center">
+                <div className="md:w-1/2 md:ml-8 md:mr-8 mt-8 mb-4 md:mb-8 flex flex-col items-center">
                     {img && img !== "failed" ? (
                         <div className="flex flex-col justify-start items-center">
                             <img
@@ -237,7 +245,7 @@ const TOOL = () => {
                         <div>
                             {navigator.share && (
                                 <button
-                                    className="mt-6 text-xl border-4 bg-spotify-green text-white border-spotify-green px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
+                                    className="mt-6 text-sm md:text-xl border-4 bg-spotify-green text-white border-spotify-green px-2 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
                                     onClick={async () => {
                                         const shareable = cachedImages[`${type}_${length}_SHARE`];
                                         if (shareable) {
@@ -269,7 +277,7 @@ const TOOL = () => {
                                 href={img ? img : "#"}
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
                             >
-                                <button className="ml-5 mt-6 text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-4 py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
+                                <button className="ml-5 mt-6 text-sm md:text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-2 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
                                     Save Image
                                 </button>
                             </a>
@@ -384,7 +392,7 @@ const TOOL = () => {
                             <div
                                 className={
                                     ClashDisplay.className +
-                                    " uppercase text-lg sm:text-lg md:text-lg lg:text-2xl mt-3"
+                                    " text-center uppercase md:text-lg lg:text-2xl mt-3 mb-1"
                                 }
                             >
                                 {name}'s Top {type} - {timeToText[length]}
@@ -421,7 +429,7 @@ const TOOL = () => {
                     )}
                     <div className="flex justify-center">
                         <img
-                            className="w-32 mt-6"
+                            className="w-20 mb-3 md:w-32 mt-6"
                             src="/assets/images/Spotify_Logo_RGB_Green.png"
                         ></img>
                     </div>
