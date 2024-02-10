@@ -278,7 +278,7 @@ const TOOL = () => {
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
                             >
                                 <button className="ml-5 mt-6 text-lg md:text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
-                                    Save Image
+                                    Save Imagepoop
                                 </button>
                             </a>
                         </div>
