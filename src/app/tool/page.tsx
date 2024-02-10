@@ -243,49 +243,19 @@ const TOOL = () => {
                     )}
                     {img && img !== "failed" && (
                         <div>
-                            {true && (
-                                <button
-                                    className="mt-6 text-lg md:text-xl border-4 bg-spotify-green text-white border-spotify-green px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
-                                    onClick={async () => {
-                                        const shareable = cachedImages[`${type}_${length}_SHARE`];
-                                        if (shareable) {
-                                            navigator
-                                                .share({
-                                                    files: [
-                                                        new File(
-                                                            [await (await fetch(shareable)).blob()],
-                                                            "groovy_grids_" +
-                                                                type +
-                                                                "_" +
-                                                                length +
-                                                                ".jpg",
-                                                            { type: "image/jpeg" }
-                                                        ),
-                                                    ],
-                                                })
-                                                .then(() => console.log("Successfully shared"))
-                                                .catch((error) =>
-                                                    console.error("Error sharing:", error)
-                                                );
-                                        }
-                                    }}
-                                >
-                                    Share
-                                </button>
-                            )}
                             <a
                                 href={img ? img : "#"}
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
                             >
                                 <button className="ml-5 mt-6 text-lg md:text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
-                                    Save Imagepoop
+                                    Save Image
                                 </button>
                             </a>
                         </div>
                     )}
                 </div>
                 <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
-                    <p>Collage Type</p>
+                    {/* <p>Collage Type</p>
                     <div>
                         <button
                             className={
@@ -313,8 +283,8 @@ const TOOL = () => {
                         >
                             Artists
                         </button>
-                    </div>
-                    <p className="mt-3">Length</p>
+                    </div> */}
+                    <p className="md:mt-3">Length</p>
                     <div className="">
                         <button
                             className={
@@ -356,7 +326,7 @@ const TOOL = () => {
                             All Time
                         </button>
                     </div>
-                    <p className="mt-3">Format</p>
+                    {/* <p className="mt-3">Format</p>
                     <div className="">
                         <button
                             className={
@@ -384,7 +354,7 @@ const TOOL = () => {
                         >
                             Shareable
                         </button>
-                    </div>
+                    </div> */}
 
                     {displayedItems && (
                         <div className="flex flex-col">
