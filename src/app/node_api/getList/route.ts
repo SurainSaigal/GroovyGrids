@@ -14,7 +14,7 @@ export async function POST(request: Request) {
             "https://api.spotify.com/v1/me/top/" +
             req.item_type +
             "?" +
-            "limit=100" +
+            "limit=50" +
             "&offset=0" +
             "&time_range=" +
             req.time_range;

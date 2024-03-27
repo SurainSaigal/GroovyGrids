@@ -26,7 +26,7 @@ def hello_world():
         name = data['name']
         date = data['date']
         collage, mapInfos, status = makeCollage(
-            token, type, 100, 0, length, format, name, date)
+            token, type, 50, 0, length, format, name, date)
 
         if status == 409:
             abort(409)
@@ -55,9 +55,12 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         item_type + '?' + 'limit=' + \
         str(limit) + '&offset=' + str(offset) + '&time_range=' + time_range
 
+    # print("req_url", req_url, flush=True)
+
     response = requests.get(url=req_url, headers={
         "Authorization": "Bearer " + auth_token, "Content-Type": "application/json"})
 
+    # print("response", response.json(), flush=True)
     if not response.ok:
         return None, None, 409
     response = response.json()
