@@ -19,6 +19,11 @@ const BottomBar: React.FC<BottomBarProps> = ({ login }) => {
                 <p className="text-blue-500 text-sm ml-1">
                     <Link href="/privacy-policy">privacy policy</Link>
                 </p>
+
+                <p className="text-gray-500 text-sm ml-1"> | </p>
+                <p className="text-blue-500 text-sm ml-1">
+                    <Link href="/privacy-policy">disconnect from spotify</Link>
+                </p>
                 {!login && (
                     <>
                         <p className="text-gray-500 text-sm ml-1"> | </p>

@@ -15,8 +15,18 @@ function PrivacyPolicy() {
                     Groovy Grids does not store or share any of your personal or Spotify data with
                     third parties. All data is used ONLY for the purpose of generating your collages
                     and is not stored afterwards. Though we do not store your data, you can still
-                    revoke our access to your Spotify data at any time by visiting your Spotify
-                    account settings.
+                    revoke our access to your Spotify data at any time by visiting your{" "}
+                    <a className="text-blue-500" href="https://www.spotify.com/us/account/apps/">
+                        Spotify account apps page
+                    </a>{" "}
+                    and clicking "Remove Acesss" on GroovyGrids.{" "}
+                    <a
+                        className="text-blue-500"
+                        href="https://support.spotify.com/us/article/spotify-on-other-apps/"
+                    >
+                        Here
+                    </a>{" "}
+                    is a more detailed guide for doing so.
                 </p>
             </div>
             <BottomBar login={false} />

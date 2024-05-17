@@ -26,7 +26,7 @@ def hello_world():
         name = data['name']
         date = data['date']
         collage, mapInfos, status = makeCollage(
-            token, type, 100, 0, length, format, name, date)
+            token, type, 50, 0, length, format, name, date)
 
         if status == 409:
             abort(409)

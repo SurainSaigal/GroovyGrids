@@ -254,7 +254,7 @@ const TOOL = () => {
                         </div>
                     )}
                 </div>
-                <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
+                <div className="md:w-1/2 mr-8 ml-8 md:mt-36 min-h-screen items-center justify-center">
                     {/* <p>Collage Type</p>
                     <div>
                         <button
