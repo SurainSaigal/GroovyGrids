@@ -12,6 +12,8 @@ import random
 app = Flask(__name__)
 CORS(app)
 
+# create collage via PIL
+
 
 @app.route("/api/collage", methods=['POST', 'GET'])
 def hello_world():
