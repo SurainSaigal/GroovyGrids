@@ -177,8 +177,8 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     if logo_disp:
         urlDraw = ImageDraw.Draw(collage)
         urlOffset = left
-        urlDraw.text((urlOffset, collage.height - ((165 if format == "INTERACT" else 173))),
-                     "groovygrids.vercel.app", font=logoFont, fill=(255, 255, 255))
+        urlDraw.text((urlOffset, collage.height - ((165 if format == "INTERACT" else 180))),
+                     "groovygrids.vercel.app", font=logoFont, fill=(0, 0, 0))
 
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
