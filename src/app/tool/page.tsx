@@ -47,10 +47,10 @@ const TOOL = () => {
     const [cachedImageMaps, setCachedImageMaps] = useState<
         Record<string, [ImageResponse[], [number, number]]>
     >({});
-    const [isExpanded, setIsExpanded] = useState(false);
+    // const [isExpanded, setIsExpanded] = useState(false);
     let displayedItems;
     if (listData) {
-        displayedItems = isExpanded ? listData : listData.slice(0, 3);
+        displayedItems = listData;
     }
 
     const cacheKey = `${type}_${length}_${format}`;
@@ -243,12 +243,12 @@ const TOOL = () => {
                     )}
                     {img && img !== "failed" && (
                         <div>
-                            {true && (
-                                <button
-                                    className="mt-6 text-lg md:text-xl border-4 bg-spotify-green text-white border-spotify-green px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#38c256]"
-                                    onClick={async () => {
-                                        const shareable = cachedImages[`${type}_${length}_SHARE`];
-                                        if (shareable) {
+                            <button
+                                className="mt-6 text-lg md:text-xl border-4 bg-[#01c4ff] border-[#01c4ff] px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]"
+                                onClick={async () => {
+                                    const shareable = cachedImages[`${type}_${length}_SHARE`];
+                                    if (shareable) {
+                                        if (navigator.share) {
                                             navigator
                                                 .share({
                                                     files: [
@@ -267,171 +267,200 @@ const TOOL = () => {
                                                 .catch((error) =>
                                                     console.error("Error sharing:", error)
                                                 );
+                                        } else {
+                                            // trigger file download
+
+                                            const response = await fetch(shareable);
+                                            const blob = await response.blob();
+                                            const downloadUrl = window.URL.createObjectURL(blob);
+                                            const link = document.createElement("a");
+                                            link.href = downloadUrl;
+                                            link.setAttribute(
+                                                "download",
+                                                `groovy_grids_${type}_${length}.jpg`
+                                            ); // or any other extension
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                            window.URL.revokeObjectURL(downloadUrl); // Clean up
                                         }
-                                    }}
-                                >
-                                    Share
-                                </button>
-                            )}
-                            <a
+                                    }
+                                }}
+                            >
+                                Save Image
+                            </button>
+
+                            {/* <a
                                 href={img ? img : "#"}
                                 download={"groovy_grids_" + type + "_" + length + ".jpg"}
                             >
                                 <button className="ml-5 mt-6 text-lg md:text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
                                     Save Image
                                 </button>
-                            </a>
+                            </a> */}
                         </div>
                     )}
                 </div>
-                <div className="md:w-1/2 mr-8 ml-8 md:mt-36 place-content-center min-h-screen items-center justify-center">
-                    <p>Collage Type</p>
-                    <div>
-                        <button
-                            className={
-                                "w-1/2 text-xl border-4 px-4 py-2 rounded-l-lg " +
-                                (type === "tracks" ? "bg-[#01c4ff] border-[#01b0e6]" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setType("tracks");
-                                }
-                            }}
-                        >
-                            Tracks
-                        </button>
-                        <button
-                            className={
-                                "w-1/2 text-xl border-4 px-4 py-2 rounded-r-lg " +
-                                (type === "artists" ? "bg-[#01c4ff] border-[#01b0e6]" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setType("artists");
-                                }
-                            }}
-                        >
-                            Artists
-                        </button>
-                    </div>
-                    <p className="mt-3">Length</p>
-                    <div className="">
-                        <button
-                            className={
-                                "text-xl w-1/3 border-4 px-4 py-2 rounded-l-lg " +
-                                (length === "short_term" ? "border-[#da47a9] bg-[#f24fbc]" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setLength("short_term");
-                                }
-                            }}
-                        >
-                            Last Month
-                        </button>
-                        <button
-                            className={
-                                "text-xl w-1/3 border-4 px-4 py-2 " +
-                                (length === "medium_term" ? "border-[#da47a9] bg-[#f24fbc]" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setLength("medium_term");
-                                }
-                            }}
-                        >
-                            Last 6 Months
-                        </button>
-                        <button
-                            className={
-                                "text-xl w-1/3 border-4 px-4 py-2 rounded-r-lg " +
-                                (length === "long_term" ? "border-[#da47a9] bg-[#f24fbc]" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setLength("long_term");
-                                }
-                            }}
-                        >
-                            All Time
-                        </button>
-                    </div>
-                    <p className="mt-3">Format</p>
-                    <div className="">
-                        <button
-                            className={
-                                "text-xl w-1/2 border-4 px-4 py-2 rounded-l-lg " +
-                                (format === "INTERACT" ? "border-[#38c256] bg-spotify-green" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setFormat("INTERACT");
-                                }
-                            }}
-                        >
-                            All
-                        </button>
-                        <button
-                            className={
-                                "text-xl w-1/2 border-4 px-4 py-2 rounded-r-lg " +
-                                (format === "SHARE" ? "border-[#38c256] bg-spotify-green" : "")
-                            }
-                            onClick={() => {
-                                if (img) {
-                                    setFormat("SHARE");
-                                }
-                            }}
-                        >
-                            Shareable
-                        </button>
-                    </div>
-
-                    {displayedItems && (
-                        <div className="flex flex-col">
-                            <p className="mt-4">Click on an image or song title to view a song!</p>
-                            <div
+                <div className="relative md:w-1/2 mr-8 ml-8 md:mt-8 mb-4 items-center justify-center">
+                    <div className="md:fixed md:w-[45vw]">
+                        <p>Collage Type</p>
+                        <div>
+                            <button
                                 className={
-                                    ClashDisplay.className +
-                                    " text-center uppercase md:text-lg lg:text-2xl mt-3 mb-1"
+                                    "w-1/2 text-xl border-4 px-4 py-2 rounded-l-lg " +
+                                    (type === "tracks" ? "bg-[#01c4ff] border-[#01b0e6]" : "")
                                 }
+                                onClick={() => {
+                                    if (img) {
+                                        setType("tracks");
+                                    }
+                                }}
                             >
-                                {name}'s Top {type} - {timeToText[length]}
-                            </div>
-                            {displayedItems.map((item, index) => (
-                                <div key={index}>
-                                    <a
-                                        href={item[1]}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:text-purple-500"
+                                Tracks
+                            </button>
+                            <button
+                                className={
+                                    "w-1/2 text-xl border-4 px-4 py-2 rounded-r-lg " +
+                                    (type === "artists" ? "bg-[#01c4ff] border-[#01b0e6]" : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setType("artists");
+                                    }
+                                }}
+                            >
+                                Artists
+                            </button>
+                        </div>
+                        <p className="mt-3">Length</p>
+                        <div className="">
+                            <button
+                                className={
+                                    "text-xl w-1/3 border-4 px-4 py-2 rounded-l-lg " +
+                                    (length === "short_term" ? "border-[#da47a9] bg-[#f24fbc]" : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setLength("short_term");
+                                    }
+                                }}
+                            >
+                                Last Month
+                            </button>
+                            <button
+                                className={
+                                    "text-xl w-1/3 border-4 px-4 py-2 " +
+                                    (length === "medium_term"
+                                        ? "border-[#da47a9] bg-[#f24fbc]"
+                                        : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setLength("medium_term");
+                                    }
+                                }}
+                            >
+                                Last 6 Months
+                            </button>
+                            <button
+                                className={
+                                    "text-xl w-1/3 border-4 px-4 py-2 rounded-r-lg " +
+                                    (length === "long_term" ? "border-[#da47a9] bg-[#f24fbc]" : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setLength("long_term");
+                                    }
+                                }}
+                            >
+                                All Time
+                            </button>
+                        </div>
+                        <p className="mt-3">Format</p>
+                        <div className="">
+                            <button
+                                className={
+                                    "text-xl w-1/2 border-4 px-4 py-2 rounded-l-lg " +
+                                    (format === "INTERACT"
+                                        ? "border-[#38c256] bg-spotify-green"
+                                        : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setFormat("INTERACT");
+                                    }
+                                }}
+                            >
+                                All
+                            </button>
+                            <button
+                                className={
+                                    "text-xl w-1/2 border-4 px-4 py-2 rounded-r-lg " +
+                                    (format === "SHARE" ? "border-[#38c256] bg-spotify-green" : "")
+                                }
+                                onClick={() => {
+                                    if (img) {
+                                        setFormat("SHARE");
+                                    }
+                                }}
+                            >
+                                Shareable
+                            </button>
+                            {displayedItems && (
+                                <>
+                                    <p className="mt-4 text-center">
+                                        Click on an image or song title to view a song!
+                                    </p>
+                                    <div
+                                        className={
+                                            ClashDisplay.className +
+                                            " text-center uppercase md:text-lg lg:text-2xl mt-3 mb-1"
+                                        }
                                     >
-                                        {index + 1}. {item[0]}
-                                    </a>
-                                </div>
-                            ))}
-                            {!isExpanded && (
-                                <button
-                                    className="text-gray-500"
-                                    onClick={() => setIsExpanded(true)}
-                                >
-                                    see all <BiSolidRightArrow className="inline-block mb-1" />
-                                </button>
-                            )}
-                            {isExpanded && (
-                                <button
-                                    className="text-gray-500"
-                                    onClick={() => setIsExpanded(false)}
-                                >
-                                    <BiSolidUpArrow className="inline-block mb-1" />
-                                </button>
+                                        {name}'s Top {type} - {timeToText[length]}
+                                    </div>
+                                </>
                             )}
                         </div>
-                    )}
-                    <div className="flex justify-center">
-                        <img
-                            className="w-20 mb-3 md:w-32 mt-6"
-                            src="/assets/images/Spotify_Logo_RGB_Green.png"
-                        ></img>
+
+                        {displayedItems && (
+                            <div className="flex flex-col overflow-auto h-52 border-2 border-gray-300 rounded-lg px-2">
+                                {displayedItems.map((item, index) => (
+                                    <div key={index}>
+                                        <a
+                                            href={item[1]}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:text-purple-500"
+                                        >
+                                            {index + 1}. {item[0]}
+                                        </a>
+                                    </div>
+                                ))}
+                                {/* {!isExpanded && (
+                                    <button
+                                        className="text-gray-500"
+                                        onClick={() => setIsExpanded(true)}
+                                    >
+                                        see all <BiSolidRightArrow className="inline-block mb-1" />
+                                    </button>
+                                )}
+                                {isExpanded && (
+                                    <button
+                                        className="text-gray-500"
+                                        onClick={() => setIsExpanded(false)}
+                                    >
+                                        <BiSolidUpArrow className="inline-block mb-1" />
+                                    </button>
+                                )} */}
+                            </div>
+                        )}
+                        {/* <div className="flex justify-center">
+                            <img
+                                className="w-20 mb-3 md:w-32 mt-2"
+                                src="/assets/images/Spotify_Logo_RGB_Green.png"
+                            ></img>
+                        </div> */}
                     </div>
                 </div>
             </div>
