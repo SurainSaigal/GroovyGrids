@@ -2,9 +2,7 @@
 
 Groovy Grids is designed for any Spotify user who is interested in visualizing their listening data and top tracks or artists. It is a neat visual tool and makes visually appealing collages that are designed to be shared. 
 
-You can visit Groovy Grids at [groovygrids.vercel.app](https://groovygrids.vercel.app)
-
-**Please note that Groovy Grids is currently in the process of being approved for an extension quota request from Spotify, meaning right now you will not be able to utilize it's full functionality even if you are a Spotify user.**
+You can try Groovy Grids for yourself at [groovygrids.vercel.app](https://groovygrids.vercel.app)!
 
 Please view the demos below!
 
