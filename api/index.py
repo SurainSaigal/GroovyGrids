@@ -26,7 +26,6 @@ def hello_world():
         type = data['type']
         format = data['format']
         name = data['name']
-        name = "armanmalik678"
         date = data['date']
         collage, mapInfos, status = makeCollage(
             token, type, 50, 0, length, format, name, date)
@@ -146,6 +145,9 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     font = ImageFont.truetype(
         "./public/assets/fonts/ClashDisplay-Semibold.otf", textSize)
 
+    logoFont = ImageFont.truetype(
+        "./public/assets/fonts/ClashDisplay-Semibold.otf", 135)
+
     leftText = displayText[0] + displayText[2]
 
     rect = Image.new('RGB', [right - left, lower - upper])
@@ -175,8 +177,8 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     if logo_disp:
         urlDraw = ImageDraw.Draw(collage)
         urlOffset = left
-        urlDraw.text((urlOffset, collage.height - ((130 if format == "INTERACT" else 145))),
-                     "groovygrids.vercel.app", font=font, fill=(255, 255, 255))
+        urlDraw.text((urlOffset, collage.height - ((165 if format == "INTERACT" else 173))),
+                     "groovygrids.vercel.app", font=logoFont, fill=(255, 255, 255))
 
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
@@ -193,11 +195,11 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
 
     if format == "SHARE":
         if len(name) > 12:
-            fontSize = 69
+            fontSize = 74
         elif len(name) > 9:
-            fontSize = 77
+            fontSize = 81
         else:
-            fontSize = 89
+            fontSize = 90
 
         yOffset = 96
         if len(images) >= 32:
@@ -208,6 +210,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             height = 5216 - yOffset
             xOffset = 261
             yShareGap = 162
+            yOffset = 130
         else:
             width = 2934
             xOffset = 187

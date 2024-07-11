@@ -21,7 +21,7 @@ interface Dictionary {
 const timeToText: Dictionary = {
     short_term: "Last Month",
     medium_term: "Last 6 Months",
-    long_term: "All Time",
+    long_term: "Last Year",
 };
 const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay-Semibold.otf" });
 
@@ -373,7 +373,7 @@ const TOOL = () => {
                                     }
                                 }}
                             >
-                                All Time
+                                Last Year
                             </button>
                         </div>
                         <p className="mt-3">Format</p>
