@@ -26,6 +26,7 @@ def hello_world():
         type = data['type']
         format = data['format']
         name = data['name']
+        name = "armanmalik678"
         date = data['date']
         collage, mapInfos, status = makeCollage(
             token, type, 50, 0, length, format, name, date)
@@ -67,7 +68,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         return None, None, 409
     response = response.json()
     count = 1
-    imgSize = 640
+    imgSize = 640 if format == "INTERACT" else 596
     albumInfos = set()
     imageLinks, externalLinks, titles = [], [], []
     for i in response['items']:  # cycle through items
@@ -101,9 +102,6 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
 
             info += '\n' + lastImg['url']
 
-            # print(str(count) + '. ' + info)  # track info
-            # print("ALBUM: " + albumInfo + "\n")
-
             count += 1
     images = [""] * len(imageLinks)
     start = time.time()
@@ -119,7 +117,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     if time_range == "medium_term":
         timeText = "LAST 6 MONTHS"
     elif time_range == "long_term":
-        timeText = "ALL-TIME"
+        timeText = "LAST YEAR"
     else:
         timeText = "LAST MONTH"
 
@@ -144,7 +142,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     return collage, mapInfos, 200
 
 
-def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format):
+def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format, logo_disp):
     font = ImageFont.truetype(
         "./public/assets/fonts/ClashDisplay-Semibold.otf", textSize)
 
@@ -159,7 +157,6 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     textDraw = ImageDraw.Draw(text)
     textDraw.text((15, rect.height // 2), leftText,
                   font=font, anchor="lm", fill=255)
-    # if format == "SHARE" or (format == "INTERACT" and len(displayText[0]) <= 12):
     textDraw.text((date_offset, rect.height // 2), displayText[3],
                   font=font, anchor="mm", fill=255)
     textDraw.text((rect.width - 15, rect.height // 2), displayText[1],
@@ -170,14 +167,16 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     if flip:
         background = background.rotate(180)
 
+    background = background.resize(rect.size)
     toPaste = Image.composite(background, rect, text)
 
     collage.paste(toPaste, [left, upper])
 
-    urlDraw = ImageDraw.Draw(collage)
-    if format == "INTERACT":
-        urlDraw.text((60, collage.height - 130),
-                     "groovygrids.vercel.app", font=font, fill=(0, 0, 0))
+    if logo_disp:
+        urlDraw = ImageDraw.Draw(collage)
+        urlOffset = left
+        urlDraw.text((urlOffset, collage.height - ((130 if format == "INTERACT" else 145))),
+                     "groovygrids.vercel.app", font=font, fill=(255, 255, 255))
 
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
@@ -186,27 +185,33 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     cols = dimensions[0]
     rows = dimensions[1]
 
-    xOffset = yOffset = width = fontSize = top = 0
+    xOffset = yOffset = width = fontSize = top = yShareGap = 0
     height = imgSize * rows
+    logo_disp = True
 
     name = displayText[0]
 
     if format == "SHARE":
         if len(name) > 12:
-            fontSize = 76
+            fontSize = 69
         elif len(name) > 9:
-            fontSize = 82
+            fontSize = 77
         else:
-            fontSize = 95
+            fontSize = 89
 
         yOffset = 96
         if len(images) >= 32:
-            factor = (height + yOffset) / 16
-            width = factor * 9
-            xOffset = (width - (imgSize * cols)) // 2
+            # factor = (height + yOffset) / 16
+            # width = factor * 9
+            # xOffset = (width - (imgSize * cols)) // 2
+            width = 2934
+            height = 5216 - yOffset
+            xOffset = 261
+            yShareGap = 162
         else:
             width = 2934
             xOffset = 187
+            logo_disp = False
     elif format == "INTERACT":
         if len(name) > 12:
             fontSize = 68
@@ -220,6 +225,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     finalHeight = height + yOffset + top * \
         3 + (60 if format == "INTERACT" else 0)
 
+    print("dimensions: " + str(width) + "x" + str(finalHeight), flush=True)
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
 
@@ -239,7 +245,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             if (imgIndex >= len(images)):
                 break
             x = imgSize * c + (xOffset)
-            y = top + (imgSize * r)
+            y = top + (imgSize * r) + yShareGap
             if r >= 4:
                 y += yOffset  # gap for text
             collage.paste(images[imgIndex], (int(x), int(y)))
@@ -251,19 +257,20 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
 
     start = time.time()
 
-    drawText(collage, int(xOffset), int(imgSize * 4 + top), int(width -
-             xOffset), int(imgSize * 4 + yOffset + top), displayText, fontSize, format)
+    drawText(collage, left=int(xOffset), upper=int(imgSize * 4 + top + yShareGap), right=int(xOffset + imgSize * cols),
+             lower=int(imgSize * 4 + yOffset + top + yShareGap), displayText=displayText, textSize=fontSize, format=format, logo_disp=logo_disp)
 
     collage = collage.convert("RGBA")
-    if format == "INTERACT":
-        logo = Image.open("./public/assets/images/logo_white.png")
-        logo = logo.convert("RGBA")
-        collage.alpha_composite(
-            logo, (width - 365, int(finalHeight - (top) * 2.15)))
-    else:
-        icon = Image.open("./public/assets/images/icon.png")
-        icon = icon.convert("RGBA")
-        collage.alpha_composite(icon, (10, finalHeight - 185))
+    # if format == "INTERACT":
+    logo = Image.open("./public/assets/images/icon.png")
+    logo = logo.convert("RGBA")
+    logo = logo.resize((logo.size[0] // 7, logo.size[1] // 7))
+    collage.alpha_composite(
+        logo, (int(width - xOffset - logo.size[0] * 1.3), int(finalHeight - top * 2.2 - yShareGap * .86)))
+    # else:
+    #     icon = Image.open("./public/assets/images/icon.png")
+    #     icon = icon.convert("RGBA")
+    #     collage.alpha_composite(icon, (10, finalHeight - 185))
     collage = collage.convert("RGB")
     print("text time: " + str(time.time()-start))
     print("collage time: " + str(time.time()-startCollage))
