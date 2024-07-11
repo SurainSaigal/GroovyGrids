@@ -146,7 +146,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
         "./public/assets/fonts/ClashDisplay-Semibold.otf", textSize)
 
     logoFont = ImageFont.truetype(
-        "./public/assets/fonts/ClashDisplay-Semibold.otf", 135)
+        "./public/assets/fonts/ClashDisplay-Semibold.otf", 135 if format == "SHARE" else 100)
 
     leftText = displayText[0] + displayText[2]
 
@@ -177,7 +177,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     if logo_disp:
         urlDraw = ImageDraw.Draw(collage)
         urlOffset = left
-        urlDraw.text((urlOffset, collage.height - ((165 if format == "INTERACT" else 180))),
+        urlDraw.text((urlOffset, collage.height - ((155 if format == "INTERACT" else 180))),
                      "groovygrids.vercel.app", font=logoFont, fill=(0, 0, 0))
 
 
@@ -267,9 +267,9 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     # if format == "INTERACT":
     logo = Image.open("./public/assets/images/icon.png")
     logo = logo.convert("RGBA")
-    logo = logo.resize((logo.size[0] // 7, logo.size[1] // 7))
+    logo = logo.resize((logo.size[0] // 6, logo.size[1] // 6))
     collage.alpha_composite(
-        logo, (int(width - xOffset - logo.size[0] * 1.3), int(finalHeight - top * 2.2 - yShareGap * .86)))
+        logo, (int(width - xOffset - logo.size[0] * 1.05), int(finalHeight - top * 2.5 - yShareGap * .95)))
     # else:
     #     icon = Image.open("./public/assets/images/icon.png")
     #     icon = icon.convert("RGBA")
