@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify, abort
+from flask import Flask, request, send_file, jsonify, abort, Response, stream_template
 from flask_cors import CORS
 import requests
 import concurrent.futures
@@ -8,6 +8,7 @@ from functools import reduce
 import time
 import base64
 import random
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -55,10 +56,19 @@ def hello_world():
 
         response_data['info'] = mapInfos
         response_data['dimensions'] = collage.size
+        # print(response_data['image'], flush=True)
 
         collage.close()
+        response_string = json.dumps(response_data)
+        # print(response_string, flush=True)
 
-        return jsonify(response_data)
+        def generate():
+            for i in range(0, len(response_string), 1024):
+                yield response_string[i:i + 1024]
+
+        resp = Response(
+            generate(), content_type='application/json', status=200)
+        return resp
 
 
 def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, date):
