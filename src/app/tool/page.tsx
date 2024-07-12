@@ -3,10 +3,8 @@ import React, { useEffect, useState } from "react";
 import BottomBar from "../components/BottomBar";
 import Loader from "../components/Loader";
 import localFont from "next/font/local";
-import { BiSolidRightArrow, BiSolidUpArrow } from "react-icons/bi";
 import { FaRegSadTear } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import local from "next/font/local";
 
 interface ImageResponse {
     link: string;
@@ -77,6 +75,8 @@ const TOOL = () => {
                 if (response.status === 409) {
                     throw new Error("Spotify API Error");
                 }
+                // print size of response
+                console.log("response", response);
                 return response.json();
             })
             .then((data) => {

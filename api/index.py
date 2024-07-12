@@ -36,12 +36,22 @@ def hello_world():
         image_io = io.BytesIO()
         collage.save(image_io, format='JPEG')
         image_io.seek(0)
-        print("bytesio time: " + str(time.time() - start), flush=True)
+        # print("bytesio time: " + str(time.time() - start), flush=True)
 
         start = time.time()
-        response_data['image'] = base64.b64encode(
+        image_as_bytes = base64.b64encode(
             image_io.getvalue()).decode('utf-8')
-        print("decode time: " + str(time.time() - start), flush=True)
+
+        response_data['image'] = image_as_bytes
+        response_data['image2'] = image_as_bytes
+
+        # print size of image in megabytes
+        img_size = len(response_data['image']) / (1024 * 1024)
+        print("image size: " +
+              str(img_size), flush=True)
+        if img_size > 4.5:
+            print("TOO LARGE", flush=True)
+        # print("decode time: " + str(time.time() - start), flush=True)
 
         response_data['info'] = mapInfos
         response_data['dimensions'] = collage.size
@@ -110,7 +120,8 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
             executor.submit(downloadImg, link, i, images, imgSize)
             i += 1
 
-    print("user: ", name, flush=True)
+    print("user: ", name, "type: ", item_type, "time_range: ", time_range,
+          "format: ", format)
     print("image downloads done... " + str(len(images)) +
           " images time: " + str(time.time()-start))
 
@@ -229,7 +240,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     finalHeight = height + yOffset + top * \
         3 + (60 if format == "INTERACT" else 0)
 
-    print("dimensions: " + str(width) + "x" + str(finalHeight), flush=True)
+    # print("dimensions: " + str(width) + "x" + str(finalHeight), flush=True)
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
 
@@ -276,8 +287,8 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     #     icon = icon.convert("RGBA")
     #     collage.alpha_composite(icon, (10, finalHeight - 185))
     collage = collage.convert("RGB")
-    print("text time: " + str(time.time()-start))
-    print("collage time: " + str(time.time()-startCollage))
+    # print("text time: " + str(time.time()-start))
+    # print("collage time: " + str(time.time()-startCollage))
 
     return collage, mapInfos
 
