@@ -110,6 +110,7 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
             executor.submit(downloadImg, link, i, images, imgSize)
             i += 1
 
+    print("user: ", name, flush=True)
     print("image downloads done... " + str(len(images)) +
           " images time: " + str(time.time()-start))
 
