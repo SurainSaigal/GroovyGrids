@@ -76,9 +76,30 @@ const TOOL = () => {
                     throw new Error("Spotify API Error");
                 }
                 // print size of response
-                console.log("response", response);
-                return response.json();
+                // console.log("response", response);
+
+                const reader = response.body?.getReader();
+                return new ReadableStream({
+                    start(controller: ReadableStreamDefaultController) {
+                        return pump();
+                        function pump(): Promise<any> | void | Promise<void> {
+                            return reader?.read().then(({ done, value }) => {
+                                if (done) {
+                                    controller.close();
+                                    return;
+                                }
+
+                                console.log(value);
+                                controller.enqueue(value);
+                                return pump();
+                            });
+                        }
+                    },
+                });
+                // return response.json();
             })
+            .then((stream) => new Response(stream))
+            .then((response) => response.json())
             .then((data) => {
                 setFailed(false);
                 const imageResponses: ImageResponse[] = data.info;
