@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify, abort, Response, stream_template
+from flask import Flask, request, send_file, jsonify, abort, Response, stream_template, stream_with_context
 from flask_cors import CORS
 import requests
 import concurrent.futures
@@ -67,7 +67,7 @@ def hello_world():
                 yield response_string[i:i + 1024]
 
         resp = Response(
-            generate(), content_type='application/json', status=200)
+            stream_with_context(generate()), content_type='application/json', status=200)
         return resp
 
 
