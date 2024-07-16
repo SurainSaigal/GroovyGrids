@@ -9,6 +9,8 @@ import time
 import base64
 import random
 import json
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 app = Flask(__name__)
 CORS(app)
@@ -33,25 +35,58 @@ def hello_world():
 
         if status == 409:
             abort(409)
-        start = time.time()
+
         image_io = io.BytesIO()
         collage.save(image_io, format='JPEG')
+
         image_io.seek(0)
-        # print("bytesio time: " + str(time.time() - start), flush=True)
 
-        start = time.time()
-        image_as_bytes = base64.b64encode(
-            image_io.getvalue()).decode('utf-8')
+        # Create an S3 client
+        s3 = boto3.client('s3')
 
-        response_data['image'] = image_as_bytes
-        response_data['image2'] = image_as_bytes
+        # print which environment we are in
+
+        # Bucket name
+        bucket_name = 'groovygridsbucket'
+
+        # Object key (file name in the bucket). Random string of 10 characters
+        object_key = ''.join(random.choices(
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '.jpg'
+
+        try:
+            # Upload the file
+            s3.upload_fileobj(image_io, bucket_name, object_key)
+
+            # Option 1: Generate a pre-signed URL for private access
+            # Set expiration time of the URL in seconds, e.g., 3600 for 1 hour
+            url = s3.generate_presigned_url('get_object',
+                                            Params={
+                                                'Bucket': bucket_name, 'Key': object_key},
+                                            ExpiresIn=3600)
+
+            # Option 2: Get the object URL directly for public access
+            # This assumes the bucket and object are publicly accessible
+            # url = f"https://{bucket_name}.s3.amazonaws.com/{object_key}"
+
+            print("File uploaded successfully. Access it here:", url, flush=True)
+
+            response_data['image'] = url
+
+        except NoCredentialsError:
+            print("Credentials not available", flush=True)
+
+        # image_as_bytes = base64.b64encode(
+        #     image_io.getvalue()).decode('utf-8')
+
+        # response_data['image'] = image_as_bytes
+        # response_data['image2'] = image_as_bytes
 
         # print size of image in megabytes
-        img_size = len(response_data['image']) / (1024 * 1024)
-        print("image size: " +
-              str(img_size), flush=True)
-        if img_size > 4.5:
-            print("TOO LARGE", flush=True)
+        # img_size = len(response_data['image']) / (1024 * 1024)
+        # print("image size: " +
+        #       str(img_size), flush=True)
+        # if img_size > 4.5:
+        #     print("TOO LARGE", flush=True)
         # print("decode time: " + str(time.time() - start), flush=True)
 
         response_data['info'] = mapInfos
@@ -59,16 +94,24 @@ def hello_world():
         # print(response_data['image'], flush=True)
 
         collage.close()
-        response_string = json.dumps(response_data)
+        image_io.close()
+        return jsonify(response_data)
+        # response_string = json.dumps(response_data)
         # print(response_string, flush=True)
 
-        def generate():
-            for i in range(0, len(response_string), 1024):
-                yield response_string[i:i + 1024]
+        # def generate():
+        #     for i in range(0, len(response_string), 1024):
+        #         yield response_string[i:i + 1024]
 
-        resp = Response(
-            stream_with_context(generate()), content_type='application/json', status=200)
-        return resp
+        # test = "Hello My Name is Surain and this is a streaming test."
+
+        # def generate():
+        #     for i in range(0, len(test), 1024):
+        #         yield test[i:i + 1024]
+
+        # resp = Response(
+        #     stream_with_context(generate()), content_type='application/json', status=200)
+        # return resp
 
 
 def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, date):

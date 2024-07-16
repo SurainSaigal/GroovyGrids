@@ -78,28 +78,8 @@ const TOOL = () => {
                 // print size of response
                 // console.log("response", response);
 
-                const reader = response.body?.getReader();
-                return new ReadableStream({
-                    start(controller: ReadableStreamDefaultController) {
-                        return pump();
-                        function pump(): Promise<any> | void | Promise<void> {
-                            return reader?.read().then(({ done, value }) => {
-                                if (done) {
-                                    controller.close();
-                                    return;
-                                }
-
-                                console.log(value);
-                                controller.enqueue(value);
-                                return pump();
-                            });
-                        }
-                    },
-                });
-                // return response.json();
+                return response.json();
             })
-            .then((stream) => new Response(stream))
-            .then((response) => response.json())
             .then((data) => {
                 setFailed(false);
                 const imageResponses: ImageResponse[] = data.info;
@@ -125,20 +105,20 @@ const TOOL = () => {
             })
             .catch((error) => {
                 //console.log("error name", error.message);
-                if (error.name === "AbortError") {
-                    setFailed(true);
-                    console.log("retrying");
-                    performFetch(thisFormat, display);
-                } else if (error.message === "Spotify API Error") {
-                    setCollageFailed(error);
-                    setImg("failed");
-                    if (typeof window !== "undefined") {
-                        router.push("/");
-                    }
-                } else {
-                    setCollageFailed(error);
-                    setImg("failed");
-                }
+                // if (error.name === "AbortError") {
+                //     setFailed(true);
+                //     console.log("retrying");
+                //     performFetch(thisFormat, display);
+                // } else if (error.message === "Spotify API Error") {
+                //     setCollageFailed(error);
+                //     setImg("failed");
+                //     if (typeof window !== "undefined") {
+                //         router.push("/");
+                //     }
+                // } else {
+                //     setCollageFailed(error);
+                //     setImg("failed");
+                // }
             });
 
         if (display) {
