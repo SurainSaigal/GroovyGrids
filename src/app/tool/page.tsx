@@ -270,19 +270,16 @@ const TOOL = () => {
                                     const shareable = cachedImages[`${type}_${length}_SHARE`];
                                     if (shareable) {
                                         if (navigator.share) {
-                                            navigator
-                                                .share({
-                                                    files: [
-                                                        new File(
-                                                            [await (await fetch(shareable)).blob()],
-                                                            "groovy_grids_" +
-                                                                type +
-                                                                "_" +
-                                                                length +
-                                                                ".jpg",
-                                                            { type: "image/jpeg" }
-                                                        ),
-                                                    ],
+                                            fetch(shareable)
+                                                .then((response) => response.blob())
+                                                .then((blob) => {
+                                                    const fileName = `groovy_grids_${type}_${length}.jpg`;
+                                                    const file = new File([blob], fileName, {
+                                                        type: "image/jpeg",
+                                                    });
+                                                    return navigator.share({
+                                                        files: [file],
+                                                    });
                                                 })
                                                 .then(() => console.log("Successfully shared"))
                                                 .catch((error) =>
@@ -290,7 +287,6 @@ const TOOL = () => {
                                                 );
                                         } else {
                                             // trigger file download
-
                                             const response = await fetch(shareable);
                                             const blob = await response.blob();
                                             const downloadUrl = window.URL.createObjectURL(blob);
