@@ -11,6 +11,7 @@ import random
 import json
 import boto3
 from botocore.exceptions import NoCredentialsError
+from threading import Thread
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +22,16 @@ CORS(app)
 @app.route("/api/hello", methods=['GET'])
 def hello():
     return "Hello World!"
+
+
+# @app.route("/api/delete_image", methods=['GET'])
+def delete_image(image_key):
+    print("waiting to delete...", flush=True)
+    time.sleep(600)
+    s3 = boto3.client('s3')
+    s3.delete_object(Bucket='groovygridsbucket', Key=image_key)
+    print(image_key, "deleted", flush=True)
+    return "Deleted"
 
 
 @app.route("/api/collage", methods=['POST', 'GET'])
@@ -69,13 +80,14 @@ def hello_world():
                                                 'Bucket': bucket_name, 'Key': object_key},
                                             ExpiresIn=3600)
 
-            # Option 2: Get the object URL directly for public access
-            # This assumes the bucket and object are publicly accessible
-            # url = f"https://{bucket_name}.s3.amazonaws.com/{object_key}"
-
-            print("File uploaded successfully. Access it here:", url, flush=True)
+            # print("File uploaded successfully. Access it here:", url, flush=True)
 
             response_data['image'] = url
+            response_data['filename'] = object_key
+
+            # spin thread to delete image after 10 minutes
+            thread = Thread(target=delete_image, args=(object_key,))
+            thread.start()
 
         except NoCredentialsError:
             print("Credentials not available", flush=True)

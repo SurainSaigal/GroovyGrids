@@ -83,42 +83,62 @@ const TOOL = () => {
             .then((data) => {
                 setFailed(false);
                 const imageResponses: ImageResponse[] = data.info;
-                fetch(`data:image/jpeg;base64,${data.image}`)
-                    .then((response) => response.blob())
-                    .then((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        setCachedImages((prevCachedImages) => ({
-                            ...prevCachedImages,
-                            [fetchCacheKey]: url,
-                        }));
-                        setCachedImageMaps((prevCachedImageMaps) => ({
-                            ...prevCachedImageMaps,
-                            [fetchCacheKey]: [imageResponses, data.dimensions],
-                        }));
-                        if (display) {
-                            setDims(data.dimensions);
-                            setImageMapDataDummy(imageResponses);
-                            setCollageFailed(null);
-                            setImg(url);
-                        }
-                    });
+                const url = data.image;
+
+                setCachedImages((prevCachedImages) => ({
+                    ...prevCachedImages,
+                    [fetchCacheKey]: url,
+                }));
+
+                setCachedImageMaps((prevCachedImageMaps) => ({
+                    ...prevCachedImageMaps,
+                    [fetchCacheKey]: [imageResponses, data.dimensions],
+                }));
+
+                if (display) {
+                    setDims(data.dimensions);
+                    setImageMapDataDummy(imageResponses);
+                    setCollageFailed(null);
+                    setImg(url);
+                    // fetch(`/api/delete_image?filename=${data.filename}`);
+                }
+
+                // fetch(`data:image/jpeg;base64,${data.image}`)
+                //     .then((response) => response.blob())
+                //     .then((blob) => {
+                //         const url = URL.createObjectURL(blob);
+                //         setCachedImages((prevCachedImages) => ({
+                //             ...prevCachedImages,
+                //             [fetchCacheKey]: url,
+                //         }));
+                //         setCachedImageMaps((prevCachedImageMaps) => ({
+                //             ...prevCachedImageMaps,
+                //             [fetchCacheKey]: [imageResponses, data.dimensions],
+                //         }));
+                //         if (display) {
+                //             setDims(data.dimensions);
+                //             setImageMapDataDummy(imageResponses);
+                //             setCollageFailed(null);
+                //             setImg(url);
+                //         }
+                //     });
             })
             .catch((error) => {
-                //console.log("error name", error.message);
-                // if (error.name === "AbortError") {
-                //     setFailed(true);
-                //     console.log("retrying");
-                //     performFetch(thisFormat, display);
-                // } else if (error.message === "Spotify API Error") {
-                //     setCollageFailed(error);
-                //     setImg("failed");
-                //     if (typeof window !== "undefined") {
-                //         router.push("/");
-                //     }
-                // } else {
-                //     setCollageFailed(error);
-                //     setImg("failed");
-                // }
+                console.log("error name", error.message);
+                if (error.name === "AbortError") {
+                    setFailed(true);
+                    console.log("retrying");
+                    performFetch(thisFormat, display);
+                } else if (error.message === "Spotify API Error") {
+                    setCollageFailed(error);
+                    setImg("failed");
+                    if (typeof window !== "undefined") {
+                        router.push("/");
+                    }
+                } else {
+                    setCollageFailed(error);
+                    setImg("failed");
+                }
             });
 
         if (display) {
