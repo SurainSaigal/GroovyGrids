@@ -6,7 +6,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "flask-dev": "FLASK_DEBUG=1 pip3 install -r requirements.txt && python3 -m flask --app api/index run -p 5328 --reload",
+        "flask-dev": "echo $CONDA_DEFAULT_ENV && echo \"^^^ CONDA ENV MUST BE groovygridsflaskenv ^^^\" && python -m flask --app api/index run -p 5328 --reload",
         "next-dev": "next dev",
         "next-home": "dotenv -e .env.home -- next dev",
         "dev": "concurrently \"npm run next-dev\" \"npm run flask-dev\"",

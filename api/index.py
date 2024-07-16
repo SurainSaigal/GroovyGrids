@@ -18,6 +18,11 @@ CORS(app)
 # create collage via PIL
 
 
+@app.route("/api/hello", methods=['GET'])
+def hello():
+    return "Hello World!"
+
+
 @app.route("/api/collage", methods=['POST', 'GET'])
 def hello_world():
     token = ""
@@ -51,7 +56,7 @@ def hello_world():
 
         # Object key (file name in the bucket). Random string of 10 characters
         object_key = ''.join(random.choices(
-            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '.jpg'
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '_vercel.jpg'
 
         try:
             # Upload the file
