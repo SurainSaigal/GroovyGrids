@@ -11,12 +11,15 @@ import random
 import json
 import boto3
 from botocore.exceptions import NoCredentialsError
+from botocore.config import Config
 from threading import Thread
 
 app = Flask(__name__)
 CORS(app)
 
-# create collage via PIL
+my_config = Config(
+    region_name='us-east-2',
+    signature_version='v4')
 
 
 @app.route("/api/hello", methods=['GET'])
@@ -28,7 +31,7 @@ def hello():
 def delete_image(image_key):
     print("waiting to delete...", flush=True)
     time.sleep(600)
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', config=my_config)
     s3.delete_object(Bucket='groovygridsbucket', Key=image_key)
     print(image_key, "deleted", flush=True)
     return "Deleted"
@@ -58,7 +61,7 @@ def hello_world():
         image_io.seek(0)
 
         # Create an S3 client
-        s3 = boto3.client('s3')
+        s3 = boto3.client('s3', config=my_config)
 
         # print which environment we are in
 
