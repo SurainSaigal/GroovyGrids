@@ -268,6 +268,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
     startCollage = time.time()
+    # images = images[0:30] # for testing shorter lengths
     dimensions = getDim(len(images), format)
     cols = dimensions[0]
     rows = dimensions[1]
@@ -293,12 +294,12 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
             # xOffset = (width - (imgSize * cols)) // 2
             width = 2934
             height = 5216 - yOffset
-            xOffset = 261
+            xOffset = 266
             yShareGap = 162
             yOffset = 130
         else:
             width = 2934
-            xOffset = 187
+            xOffset = 266
             logo_disp = False
     elif format == "INTERACT":
         if len(name) > 12:

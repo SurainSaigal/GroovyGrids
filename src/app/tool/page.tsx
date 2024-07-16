@@ -5,6 +5,7 @@ import Loader from "../components/Loader";
 import localFont from "next/font/local";
 import { FaRegSadTear } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { isMobile } from "react-device-detect";
 
 interface ImageResponse {
     link: string;
@@ -269,7 +270,7 @@ const TOOL = () => {
                                 onClick={async () => {
                                     const shareable = cachedImages[`${type}_${length}_SHARE`];
                                     if (shareable) {
-                                        if (navigator.share) {
+                                        if (navigator.share && isMobile) {
                                             fetch(shareable)
                                                 .then((response) => response.blob())
                                                 .then((blob) => {
