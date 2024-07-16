@@ -76,8 +76,6 @@ const TOOL = () => {
                 if (response.status === 409) {
                     throw new Error("Spotify API Error");
                 }
-                // print size of response
-                // console.log("response", response);
 
                 return response.json();
             })
@@ -125,10 +123,8 @@ const TOOL = () => {
                 //     });
             })
             .catch((error) => {
-                console.log("error name", error.message);
                 if (error.name === "AbortError") {
                     setFailed(true);
-                    console.log("retrying");
                     performFetch(thisFormat, display);
                 } else if (error.message === "Spotify API Error") {
                     setCollageFailed(error);

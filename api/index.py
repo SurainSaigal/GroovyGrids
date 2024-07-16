@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify, abort, Response, stream_template, stream_with_context
+from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 import requests
 import concurrent.futures
@@ -6,9 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 from functools import reduce
 import time
-import base64
 import random
-import json
 import boto3
 from botocore.exceptions import NoCredentialsError
 from botocore.config import Config
@@ -27,13 +25,10 @@ def hello():
     return "Hello World!"
 
 
-# @app.route("/api/delete_image", methods=['GET'])
 def delete_image(image_key):
-    print("waiting to delete...", flush=True)
     time.sleep(600)
     s3 = boto3.client('s3', config=my_config)
     s3.delete_object(Bucket='groovygridsbucket', Key=image_key)
-    print(image_key, "deleted", flush=True)
     return "Deleted"
 
 
@@ -63,27 +58,21 @@ def hello_world():
         # Create an S3 client
         s3 = boto3.client('s3', config=my_config)
 
-        # print which environment we are in
-
         # Bucket name
         bucket_name = 'groovygridsbucket'
 
         # Object key (file name in the bucket). Random string of 10 characters
         object_key = ''.join(random.choices(
-            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '_vercel.jpg'
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '.jpg'
 
         try:
             # Upload the file
             s3.upload_fileobj(image_io, bucket_name, object_key)
 
-            # Option 1: Generate a pre-signed URL for private access
-            # Set expiration time of the URL in seconds, e.g., 3600 for 1 hour
             url = s3.generate_presigned_url('get_object',
                                             Params={
                                                 'Bucket': bucket_name, 'Key': object_key},
                                             ExpiresIn=3600)
-
-            # print("File uploaded successfully. Access it here:", url, flush=True)
 
             response_data['image'] = url
             response_data['filename'] = object_key
@@ -95,43 +84,12 @@ def hello_world():
         except NoCredentialsError:
             print("Credentials not available", flush=True)
 
-        # image_as_bytes = base64.b64encode(
-        #     image_io.getvalue()).decode('utf-8')
-
-        # response_data['image'] = image_as_bytes
-        # response_data['image2'] = image_as_bytes
-
-        # print size of image in megabytes
-        # img_size = len(response_data['image']) / (1024 * 1024)
-        # print("image size: " +
-        #       str(img_size), flush=True)
-        # if img_size > 4.5:
-        #     print("TOO LARGE", flush=True)
-        # print("decode time: " + str(time.time() - start), flush=True)
-
         response_data['info'] = mapInfos
         response_data['dimensions'] = collage.size
-        # print(response_data['image'], flush=True)
 
         collage.close()
         image_io.close()
         return jsonify(response_data)
-        # response_string = json.dumps(response_data)
-        # print(response_string, flush=True)
-
-        # def generate():
-        #     for i in range(0, len(response_string), 1024):
-        #         yield response_string[i:i + 1024]
-
-        # test = "Hello My Name is Surain and this is a streaming test."
-
-        # def generate():
-        #     for i in range(0, len(test), 1024):
-        #         yield test[i:i + 1024]
-
-        # resp = Response(
-        #     stream_with_context(generate()), content_type='application/json', status=200)
-        # return resp
 
 
 def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, date):
@@ -140,14 +98,12 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
         item_type + '?' + 'limit=' + \
         str(limit) + '&offset=' + str(offset) + '&time_range=' + time_range
 
-    # print("req_url", req_url, flush=True)
-
     response = requests.get(url=req_url, headers={
         "Authorization": "Bearer " + auth_token, "Content-Type": "application/json"})
 
-    # print("response", response.json(), flush=True)
     if not response.ok:
         return None, None, 409
+
     response = response.json()
     count = 1
     imgSize = 640 if format == "INTERACT" else 596
@@ -155,7 +111,6 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
     imageLinks, externalLinks, titles = [], [], []
     for i in response['items']:  # cycle through items
 
-        # print info
         if (item_type == 'tracks'):
             info = i['name'] + ' - '
             albumInfo = i['album']['name'] + "-" + \
@@ -183,8 +138,8 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
                 titles.append(info)
 
             info += '\n' + lastImg['url']
-
             count += 1
+
     images = [""] * len(imageLinks)
     start = time.time()
     with concurrent.futures.ThreadPoolExecutor(len(imageLinks)) as executor:
@@ -267,7 +222,6 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
 
 
 def constructCollage(images: list, imgSize: int, format, displayText, externalLinks, titles):
-    startCollage = time.time()
     # images = images[0:30] # for testing shorter lengths
     dimensions = getDim(len(images), format)
     cols = dimensions[0]
@@ -314,7 +268,6 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
     finalHeight = height + yOffset + top * \
         3 + (60 if format == "INTERACT" else 0)
 
-    # print("dimensions: " + str(width) + "x" + str(finalHeight), flush=True)
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
     swirls = Image.open("./public/assets/images/swirls2.jpeg")
 
@@ -350,19 +303,12 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
              lower=int(imgSize * 4 + yOffset + top + yShareGap), displayText=displayText, textSize=fontSize, format=format, logo_disp=logo_disp)
 
     collage = collage.convert("RGBA")
-    # if format == "INTERACT":
     logo = Image.open("./public/assets/images/icon.png")
     logo = logo.convert("RGBA")
     logo = logo.resize((logo.size[0] // 6, logo.size[1] // 6))
     collage.alpha_composite(
         logo, (int(width - xOffset - logo.size[0] * 1.05), int(finalHeight - top * 2.5 - yShareGap * .95)))
-    # else:
-    #     icon = Image.open("./public/assets/images/icon.png")
-    #     icon = icon.convert("RGBA")
-    #     collage.alpha_composite(icon, (10, finalHeight - 185))
     collage = collage.convert("RGB")
-    # print("text time: " + str(time.time()-start))
-    # print("collage time: " + str(time.time()-startCollage))
 
     return collage, mapInfos
 

@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Groovy Grids",
-    description: "Create personalized album collages automatically!",
+    description:
+        "Create personalized album collages automatically using Spotify data. Visualize listening data in a beautiful way.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

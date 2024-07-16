@@ -45,7 +45,6 @@ export async function POST(request: Request) {
                     }
                 }
                 infos.push([title, item.external_urls.spotify]);
-                // console.log(i + 1 + ". " + title);
             }
         } else {
             for (let i = 0; i < items.length; i++) {
