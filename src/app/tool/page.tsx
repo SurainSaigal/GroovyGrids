@@ -222,6 +222,24 @@ const TOOL = () => {
         setImageMapData(imageMapDataDummy);
     };
 
+    const messages = [
+        "Analyzing your listening habits...",
+        "Generating your collage...",
+        "Groovifying...",
+    ];
+
+    const [currentMessage, setCurrentMessage] = useState(messages[0]);
+    let messageIndex = 0;
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            setCurrentMessage(messages[messageIndex]);
+        }, 3000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <div className="">
             {/* <LogoutButton /> */}
@@ -245,6 +263,7 @@ const TOOL = () => {
                         !collageFailed && (
                             <div className="flex min-h-screen flex-col justify-center items-center">
                                 <Loader />
+                                <p className="mt-3">{currentMessage}</p>
                             </div>
                         )
                     )}
@@ -303,15 +322,6 @@ const TOOL = () => {
                             >
                                 Save Image
                             </button>
-
-                            {/* <a
-                                href={img ? img : "#"}
-                                download={"groovy_grids_" + type + "_" + length + ".jpg"}
-                            >
-                                <button className="ml-5 mt-6 text-lg md:text-xl border-4 bg-[#01c4ff] text-white border-[#01c4ff] px-3 py-1 md:px-4 md:py-2 rounded-md hover:shadow-2xl hover:border-[#01b0e6]">
-                                    Save Image
-                                </button>
-                            </a> */}
                         </div>
                     )}
                 </div>
