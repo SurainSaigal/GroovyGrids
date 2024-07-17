@@ -1,5 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "../components/Loader";
@@ -7,14 +8,13 @@ import Loader from "../components/Loader";
 const Callback = () => {
     const [token, setToken] = useState(false);
     const [error, setError] = useState("");
-    const query = useSearchParams();
-    const code = query.get("code");
-    let state = query.get("state");
+    const [code, setCode] = useState<string | null>(null);
+    const [state, setState] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchToken = async () => {
             try {
-                if (localStorage.getItem("spotifyAuthState") !== state) {
+                if (localStorage.getItem("spotifyAuthState") !== state && state) {
                     throw new Error("AuthState mismatch.");
                 }
                 const requestBody = {
@@ -52,6 +52,15 @@ const Callback = () => {
         fetchToken();
     }, [code, state]);
 
+    function SearchParams() {
+        const query = useSearchParams();
+        const code = query.get("code");
+        let state = query.get("state");
+        setCode(code);
+        setState(state);
+        return <></>;
+    }
+
     const router = useRouter();
     useEffect(() => {
         if (token) {
@@ -60,9 +69,14 @@ const Callback = () => {
     }, [token, router]);
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center">
-            {error !== "" ? "" + error : <Loader />}
-        </div>
+        <>
+            <Suspense>
+                <SearchParams />
+            </Suspense>
+            <div className="flex min-h-screen flex-col items-center justify-center">
+                {error !== "" ? "" + error : <Loader />}
+            </div>
+        </>
     );
 };
 
