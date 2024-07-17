@@ -3,6 +3,7 @@
 Groovy Grids is designed for any Spotify user who is interested in visualizing their listening habits, top tracks, and artists. Groovy Grids makes beautiful collages that are designed to be shared and shown off. 
 
 Groovy Grids was built using Next.js and Tailwind on the frontend, with a Flask backend server. AWS's S3 service is also used as an intermediary storage solution.
+Spotify quota extension received 7/3/2024.
 
 You can try Groovy Grids for yourself at [groovygrids.vercel.app](https://groovygrids.vercel.app)!
 
