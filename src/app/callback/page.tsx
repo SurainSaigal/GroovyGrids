@@ -26,7 +26,7 @@ const Callback = () => {
                     body: JSON.stringify(requestBody),
                 });
 
-                if (!response.ok) {
+                if (!response.ok && state && code) {
                     throw new Error(`HTTP error. Status: ${response.status}`);
                 }
 
