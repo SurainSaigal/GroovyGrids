@@ -49,7 +49,10 @@ const Callback = () => {
                 setError(error);
             }
         };
-        fetchToken();
+
+        if (code && state) {
+            fetchToken();
+        }
     }, [code, state]);
 
     function SearchParams() {
