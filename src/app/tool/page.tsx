@@ -27,6 +27,7 @@ const ClashDisplay = localFont({ src: "../../../public/assets/fonts/ClashDisplay
 const TOOL = () => {
     const router = useRouter();
     if (typeof window !== "undefined" && localStorage.getItem("auth_token") === null) {
+        console.log("No auth token");
         router.push("/");
     }
     const [collageFailed, setCollageFailed] = useState<string | null>(null);
@@ -110,6 +111,7 @@ const TOOL = () => {
                     setCollageFailed(error);
                     setImg("failed");
                     if (typeof window !== "undefined") {
+                        console.log("Spotify API error after collage creation.");
                         router.push("/");
                     }
                 } else {
