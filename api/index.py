@@ -63,7 +63,7 @@ def hello_world():
 
         # Object key (file name in the bucket). Random string of 10 characters
         object_key = ''.join(random.choices(
-            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '_surain' if name == "Surain" else "" + '.jpg'
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890', k=10)) + '.jpg'
 
         try:
             # Upload the file
