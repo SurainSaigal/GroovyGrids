@@ -58,9 +58,11 @@ const Callback = () => {
     function SearchParams() {
         const query = useSearchParams();
         const code = query.get("code");
-        let state = query.get("state");
-        setCode(code);
-        setState(state);
+        const state = query.get("state");
+        useEffect(() => {
+            setCode(code);
+            setState(state);
+        }, [code, state]);
         return <></>;
     }
 
