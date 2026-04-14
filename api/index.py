@@ -17,6 +17,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
+
 my_config = Config(
     region_name='us-east-2',
     signature_version='v4')
@@ -186,10 +188,10 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
 
 def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format, logo_disp):
     font = ImageFont.truetype(
-        os.path.join("..", "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), textSize)
+        os.path.join(ASSETS_DIR, "fonts", "ClashDisplay-Semibold.otf"), textSize)
 
     logoFont = ImageFont.truetype(
-        os.path.join("..", "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), 135 if format == "SHARE" else 100)
+        os.path.join(ASSETS_DIR, "fonts", "ClashDisplay-Semibold.otf"), 135 if format == "SHARE" else 100)
 
     leftText = displayText[0] + displayText[2]
 
@@ -208,7 +210,7 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
                   font=font, anchor="rm", fill=255)
 
     background = Image.open(os.path.join(
-        "..", "public", "assets", "images", "back_" + format + ".jpg"))
+        ASSETS_DIR, "images", "back_" + format + ".jpg"))
     flip = random.randint(0, 1)
     if flip:
         background = background.rotate(180)
@@ -273,8 +275,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
         3 + (60 if format == "INTERACT" else 0)
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
-    swirls = Image.open(os.path.join("..", "public",
-                        "assets", "images", "swirls2.jpeg"))
+    swirls = Image.open(os.path.join(ASSETS_DIR, "images", "swirls2.jpeg"))
 
     swirls = swirls.rotate(90 * random.randint(1, 3))
 
@@ -308,8 +309,7 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
              lower=int(imgSize * 4 + yOffset + top + yShareGap), displayText=displayText, textSize=fontSize, format=format, logo_disp=logo_disp)
 
     collage = collage.convert("RGBA")
-    logo = Image.open(os.path.join("..", "public",
-                      "assets", "images", "icon.png"))
+    logo = Image.open(os.path.join(ASSETS_DIR, "images", "icon.png"))
     logo = logo.convert("RGBA")
     logo = logo.resize((logo.size[0] // 6, logo.size[1] // 6))
     collage.alpha_composite(
