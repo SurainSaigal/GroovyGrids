@@ -17,8 +17,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 my_config = Config(
     region_name='us-east-2',
     signature_version='v4')
@@ -40,6 +38,7 @@ def delete_image(image_key):
 def hello_world():
     token = ""
     response_data = {}
+    print("cwd: ", os.getcwd(), flush=True)
     if request.method == 'POST':
         data = request.get_json()
         token = data['access_token']
@@ -187,10 +186,10 @@ def makeCollage(auth_token, item_type, limit, offset, time_range, format, name, 
 
 def drawText(collage: Image, left, upper, right, lower, displayText, textSize, format, logo_disp):
     font = ImageFont.truetype(
-        os.path.join(BASE_DIR, "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), textSize)
+        os.path.join("..", "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), textSize)
 
     logoFont = ImageFont.truetype(
-        os.path.join(BASE_DIR, "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), 135 if format == "SHARE" else 100)
+        os.path.join("..", "public", "assets", "fonts", "ClashDisplay-Semibold.otf"), 135 if format == "SHARE" else 100)
 
     leftText = displayText[0] + displayText[2]
 
@@ -208,7 +207,8 @@ def drawText(collage: Image, left, upper, right, lower, displayText, textSize, f
     textDraw.text((rect.width - 15, rect.height // 2), displayText[1],
                   font=font, anchor="rm", fill=255)
 
-    background = Image.open(os.path.join(BASE_DIR, "public", "assets", "images", "back_" + format + ".jpg"))
+    background = Image.open(os.path.join(
+        "..", "public", "assets", "images", "back_" + format + ".jpg"))
     flip = random.randint(0, 1)
     if flip:
         background = background.rotate(180)
@@ -273,7 +273,8 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
         3 + (60 if format == "INTERACT" else 0)
 
     collage = Image.new(mode="RGB", size=(int(width), finalHeight))
-    swirls = Image.open(os.path.join(BASE_DIR, "public", "assets", "images", "swirls2.jpeg"))
+    swirls = Image.open(os.path.join("..", "public",
+                        "assets", "images", "swirls2.jpeg"))
 
     swirls = swirls.rotate(90 * random.randint(1, 3))
 
@@ -307,7 +308,8 @@ def constructCollage(images: list, imgSize: int, format, displayText, externalLi
              lower=int(imgSize * 4 + yOffset + top + yShareGap), displayText=displayText, textSize=fontSize, format=format, logo_disp=logo_disp)
 
     collage = collage.convert("RGBA")
-    logo = Image.open(os.path.join(BASE_DIR, "public", "assets", "images", "icon.png"))
+    logo = Image.open(os.path.join("..", "public",
+                      "assets", "images", "icon.png"))
     logo = logo.convert("RGBA")
     logo = logo.resize((logo.size[0] // 6, logo.size[1] // 6))
     collage.alpha_composite(
